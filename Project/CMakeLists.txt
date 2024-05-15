@@ -39,30 +39,15 @@ list(APPEND DFN_LINKED_LIBRARIES PRIVATE GTest::gmock_main)
 # Insert Sources
 ################################################################################
 add_subdirectory(src)
-list(APPEND ${CMAKE_NAME_PROJECT}_sources ${src_sources})
-list(APPEND ${CMAKE_NAME_PROJECT}_headers ${src_headers})
-list(APPEND ${CMAKE_NAME_PROJECT}_includes ${src_includes})
-list(APPEND ${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES ${src_includes})
-
-
-list(APPEND DFN_SOURCES ${DFN_sources})
-list(APPEND DFN_HEADERS ${DFN_headers})
-list(APPEND DFN_INCLUDE ${DFN_includes})
+list(APPEND "${CMAKE_NAME_PROJECT}_sources" ${src_sources})
+list(APPEND "${CMAKE_NAME_PROJECT}_headers" ${src_headers})
+list(APPEND "${CMAKE_NAME_PROJECT}_includes" ${src_includes})
+list(APPEND "${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES" ${src_includes})
 
 # Create executable
 ################################################################################
-#add_executable(${PROJECT_NAME}
-#	main.cpp
-#	${DFN_SOURCES}
-#    ${DFN_HEADERS})
-
-#target_link_libraries(${PROJECT_NAME} ${DFN_LINKED_LIBRARIES})
-#target_include_directories(${PROJECT_NAME} PRIVATE ${DFN_INCLUDE})
-#target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
 add_executable(${CMAKE_PROJECT_NAME} main.cpp ${${CMAKE_NAME_PROJECT}_sources} ${${CMAKE_NAME_PROJECT}_headers})
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES})
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${${CMAKE_NAME_PROJECT}_includes})
+target_link_libraries(${PROJECT_NAME} ${DFN_LINKED_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_NAME_PROJECT}_includes})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
-
-
