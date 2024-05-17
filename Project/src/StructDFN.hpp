@@ -12,11 +12,6 @@ struct DFN {
     std::vector<unsigned int> numVertici; //vettore di numeri di vertici di ogni frattura (ordinati nel modo numVertici[i]= numero vertici della frattura idFratture[i]) (se non mi sbaglio serve a qualcosa, in lettura, non in scrittura)
     std::vector<std::vector<Eigen::Vector3d>> vertici; //vettore di matrici di dimensione 3x(numero vertici), ogni array individua le coordinate x, y, z del punto (ordinati nel modo vertici[i]= insieme delle coordinate dei vertici della frattura idFratture[i] in senso antiorario) (serve in lettura, non in scrittura)
 
-    //magari per ora teniamo la struttura come vettore dio array, se poi conviene mettere MatrixXd la mettiamo, quello che cambia è l'accesso ai dati
-    //Matrix<double,3,Dynamic>
-    //vettore di array: vertici[i][j][k]
-    //MatrixXd: vertici[i](j,k) (su Eigen a quanto ho letto il primo indice indica la colonna, il secondo la riga)
-
     //tracce
     unsigned int numTracce; //è numero delle tracce (va stampato)
     std::vector<unsigned int> idTracce; //vettore degli id delle tracce (vanno letti)
@@ -24,5 +19,12 @@ struct DFN {
     std::vector<std::array<double, 6>> estremiTracce; // x1, y1, z1, x2, y2, z2
     std::vector<bool> tips; // vero se non passante, falso se passante
     std::vector<double> lunghezze; // lunghezza della traccia
+
+
+    //magari per ora teniamo la struttura come vettore dio array, se poi conviene mettere MatrixXd la mettiamo, quello che cambia è l'accesso ai dati
+    //Matrix<double,3,Dynamic>
+    //vettore di array: vertici[i][j][k]
+    //MatrixXd: vertici[i](j,k) (su Eigen a quanto ho letto il primo indice indica la colonna, il secondo la riga)
+
 };
 }

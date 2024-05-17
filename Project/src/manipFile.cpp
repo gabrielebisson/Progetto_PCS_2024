@@ -6,7 +6,11 @@
 #include <iostream>
 
 namespace LibraryDFN {
-DFN readDFNFromFile(const std::string& filename) {
+
+// ------------------- FUNZIONE LETTURA INPUT DA FILE -------------------------------
+
+DFN readDFNFromFile(const std::string& filename)
+{
     DFN dfn;
     std::ifstream file(filename);
     if (!file) {
@@ -20,7 +24,6 @@ DFN readDFNFromFile(const std::string& filename) {
     std::getline(file, line);
     std::getline(file, line);
     dfn.numFratture = std::stoi(line);
-    //std::cout << dfn.numFratture<<std::endl;
 
     // Leggere le fratture
     for (unsigned int i = 0; i < dfn.numFratture; ++i) {
@@ -59,5 +62,50 @@ DFN readDFNFromFile(const std::string& filename) {
 
     file.close();
     return dfn;
+}
+
+//--------------------- FUNZIONE STAMPA DELLE TRACCE ----------------------
+
+void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
+{
+    // Crea e apre un file di output
+    std::ofstream outFile(filename);
+
+    // Verifica se il file è stato aperto correttamente
+    if (!outFile.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+
+    // Scrive il numero di tracce nel file
+    outFile << "# Number of Traces" << dfn.numTracce << std::endl;
+
+    // Scrive l'intestazione delle colonne
+    outFile << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2"<< std::endl;
+
+    // Stampa i valori voluti
+    for (unsigned int i = 0; i < dfn.numTracce; ++i) {
+        outFile << dfn.idTracce[i] << "; "
+                << dfn.tracce[i][0] << "; " << dfn.tracce[i][1] << "; "
+                << dfn.estremiTracce[i][0] << "; " << dfn.estremiTracce[i][1] << "; "
+                << dfn.estremiTracce[i][2] << "; " << dfn.estremiTracce[i][3] << "; "
+                << dfn.estremiTracce[i][4] << "; " << dfn.estremiTracce[i][5] << std::endl;
+    }
+
+    // Chiude il file
+    outFile.close();
+}
+
+
+//----------------- FUNZIONE STAMPA TRACCE PASSANTI - NON PASSANTI -------------------------
+
+void printTracesByFracture(const DFN& dfn, const std::string& filename)
+{
+    std::ofstream outFile(filename);
+    if (!outFile) {
+        std::cerr << "Errore nell'apertura del file: " << filename << std::endl;
+        return;
+    }
+
 }
 }
