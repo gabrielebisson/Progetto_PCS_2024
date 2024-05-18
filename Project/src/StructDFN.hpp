@@ -17,11 +17,11 @@ namespace LibraryDFN{
         //MatrixXd: vertici[i](j,k) (su Eigen a quanto ho letto il primo indice indica la colonna, il secondo la riga)
 
         //tracce
-        unsigned int numTracce; //è numero delle tracce (va stampato)
-        std::vector<unsigned int> idTracce; //vettore degli id delle tracce (vanno letti)
+        unsigned int numTracce; //è numero delle tracce
+        std::vector<unsigned int> idTracce; //vettore degli id delle tracce
         std::vector<std::array<unsigned int,2>> tracce; // idFratture1, idFratture2
-        std::vector<std::array<double, 6>> estremiTracce; // x1, y1, z1, x2, y2, z2
-        std::vector<bool> tips; // vero se non passante, falso se passante
+        std::vector<std::array<Eigen::Vector3d,2>> estremiTracce; // x1, y1, z1, x2, y2, z2
+        std::vector<std::array<bool,2>> tips; // vero se non passante, falso se passante
         std::vector<double> lunghezze; // lunghezza della traccia
     };
 }
