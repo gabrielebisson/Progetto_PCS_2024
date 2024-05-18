@@ -1,3 +1,5 @@
+//--------------- MERGE SORT DECRESCENTE--------------------
+
 #pragma once
 
 #include <vector>
@@ -20,7 +22,7 @@ void Merge(vector<T>& v,
 
     while( i <= cx && j <= dx)
     {
-        if (v[i] <= v[j])
+        if (v[i] >= v[j])
             b.push_back(v[i++]);
         else
             b.push_back(v[j++]);
@@ -31,7 +33,7 @@ void Merge(vector<T>& v,
     if ( j <= dx)
         b.insert(b.end(), v.begin() + j, v.begin() + dx + 1);
 
-    copy(b.begin(), b.end(), v.begin() + sx);
+    copy(b.rbegin(), b.rend(), v.begin() + sx); // r. per l'ordinamento decrescente
 
 }
 
