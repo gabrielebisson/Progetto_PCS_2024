@@ -9,19 +9,19 @@ namespace LibraryDFN {
 
 // ------------------- FUNZIONE LETTURA INPUT DA FILE -------------------------------
 
-DFN readDFNFromFile(const std::string& filename)
+DFN readDFNFromFile(const std::string& filename)                                        //io farei che prendere il DFN in input e non lo creerei nella funzione, per risparmiare memoria, sennò poi gli tocca copiare tutto quando chiamate la funzione
 {
     DFN dfn;
     std::ifstream file(filename);
     if (!file) {
-        std::cerr << "Error: unable to open file " << filename << std::endl;
+        std::cerr << "Error: unable to open file " << filename << std::endl;            //scrivetelo in italiano il messaggio...
         return dfn;
     }
 
     std::string line;
 
     // Leggere il numero di fratture
-    std::getline(file, line);
+    std::getline(file, line);                                                            //mettete un commento del perchè saltate una riga
     std::getline(file, line);
     dfn.numFratture = std::stoi(line);
 
@@ -35,17 +35,17 @@ DFN readDFNFromFile(const std::string& filename)
         unsigned int numVertices;
         iss >> id>> sep >> numVertices;
         // std::cout << id << "    " << numVertices << std::endl;
-        dfn.idFratture.push_back(id);
-        dfn.numVertici.push_back(numVertices);
+        dfn.idFratture.push_back(id);                                                    //non avete riservato memoria per il vettore idfratture, così al programma tocca copiare ogni volta il vettore da qualche parte prima di poter aggiungere il nuovo id, sprecando memoria e tempo: fate un reserve all'inizio
+        dfn.numVertici.push_back(numVertices);                                           //idem
 
         // Leggere i vertici
         std::vector<Eigen::Vector3d> vertices;
         vertices.reserve(numVertices);
             std::getline(file, line);
-            std::istringstream iss2(line);
+            std::istringstream iss2(line);                                               //ma a che serve sto istringstream?
             for (int j = 0; j < 3; ++j) {
                 if (!std::getline(file, line)) {
-                    std::cerr << "Error: unable to read vertices" << std::endl;
+                    std::cerr << "Error: unable to read vertices" << std::endl;          //pure qua mettete il messaggio in italiano...
                     break;
                 }
                 std::istringstream iss2(line);
@@ -57,7 +57,7 @@ DFN readDFNFromFile(const std::string& filename)
                 }
             }
 
-            dfn.vertici.push_back(vertices);
+            dfn.vertici.push_back(vertices);                                            //di nuovo non avete riservato memoria per il vettore vertici...
     }
 
     file.close();
@@ -73,7 +73,7 @@ void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
 
     // Verifica se il file è stato aperto correttamente
     if (!outFile.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
+        std::cerr << "Error opening file: " << filename << std::endl;                   //vabbè avete capito
         return;
     }
 
