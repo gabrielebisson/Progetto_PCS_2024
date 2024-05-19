@@ -7,7 +7,7 @@ using namespace Eigen;
 
 int main()
 {
-    double tol=10*__DBL_EPSILON__;
+    double tol=__DBL_EPSILON__;
     DFN prova;
     prova.numFratture=8;
     prova.idFratture={0,1,2,3,4,5,6,7};
