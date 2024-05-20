@@ -1,6 +1,7 @@
 // Funzioni per manipolare i file di input e di output
 #pragma once
 
+#include "MergeSort.hpp"
 #include "Utils.hpp"
 #include <fstream>
 #include <sstream>
@@ -10,7 +11,7 @@ namespace LibraryDFN {
 
 // ------------------- FUNZIONE LETTURA INPUT DA FILE -------------------------------
 
-void readDFNFromFile(const std::string& filename, DFN& dfn)        //io farei che prendere il DFN in input e non lo creerei nella funzione, per risparmiare memoria, sennò poi gli tocca copiare tutto quando chiamate la funzione
+void readDFNFromFile(const std::string& filename, DFN& dfn)
 {
     std::ifstream file(filename);
     if (!file) {
@@ -41,8 +42,8 @@ void readDFNFromFile(const std::string& filename, DFN& dfn)        //io farei ch
         unsigned int numVertices;
         iss >> id >> sep >> numVertices;
 
-        dfn.idFratture.push_back(id);                                                      //non avete riservato memoria per il vettore idfratture, così al programma tocca copiare ogni volta il vettore da qualche parte prima di poter aggiungere il nuovo id, sprecando memoria e tempo: fate un reserve all'inizio
-        dfn.numVertici.push_back(numVertices);                                           //idem
+        dfn.idFratture.push_back(id);
+        dfn.numVertici.push_back(numVertices);
 
         // Leggere i vertici
         std::vector<Eigen::Vector3d> vertices;
@@ -65,7 +66,7 @@ void readDFNFromFile(const std::string& filename, DFN& dfn)        //io farei ch
                     }
                 }
 
-                dfn.vertici.push_back(vertices);                                            //di nuovo non avete riservato memoria per il vettore vertici...
+                dfn.vertici.push_back(vertices);
     }
 
     file.close();
@@ -110,10 +111,53 @@ void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
 void printTracesByFracture(const DFN& dfn, const std::string& filename)
 {
     std::ofstream outFile(filename);
-    if (!outFile) {
-        std::cerr << "Errore nell'apertura del file: " << filename << " ." << std::endl;
+    if (!outFile.is_open()) {
+        std::cerr << "Errore nell'apertura del file di output: " << filename << " ." << std::endl;
         return;
     }
 
+    // Per ciascuna frattura
+    for (unsigned int i = 0; i < dfn.numFratture; ++i) {
+        unsigned int fratturaId = dfn.idFratture[i];
+
+        // Raccogli le tracce associate a questa frattura
+        std::vector<std::tuple<unsigned int, bool, double>> passanti;
+        std::vector<std::tuple<unsigned int, bool, double>> nonPassanti;
+
+        for (unsigned int j = 0; j < dfn.numTracce; ++j) {
+            if (dfn.tracce[j][0] == fratturaId || dfn.tracce[j][1] == fratturaId) {
+                bool tips = dfn.tips[j];
+                double lunghezza = dfn.lunghezze[j];
+                if (tips) {
+                    nonPassanti.emplace_back(j, tips, lunghezza);
+                } else {
+                    passanti.emplace_back(j, tips, lunghezza);
+                }
+            }
+        }
+
+        // Ordina le tracce per lunghezza in ordine decrescente usando mergesort
+        SortLibrary::MergeSort(passanti, 0, passanti.size() - 1);
+        SortLibrary::MergeSort(nonPassanti, 0, nonPassanti.size() - 1);
+
+        // Stampa il numero di tracce della frattura
+        outFile << "# FractureId; NumTraces";
+        outFile << fratturaId << "; " << (passanti.size() + nonPassanti.size()) << std::endl;
+
+        // Stampa le tracce non-passanti
+        outFile << "# TraceId; Tips; Length";
+        for (const auto& trace : nonPassanti) {
+            outFile << std::get<0>(trace) << "; " << std::get<1>(trace) << "; " << std::get<2>(trace) << std::endl;
+        }
+
+        // Stampa le tracce passanti
+        for (const auto& trace : passanti) {
+            outFile << std::get<0>(trace) << "; " << std::get<1>(trace) << "; " << std::get<2>(trace) << std::endl;
+        }
+    }
+
+    outFile.close();
 }
+
 }
+

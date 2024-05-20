@@ -33,7 +33,7 @@ void Merge(vector<T>& v,
     if ( j <= dx)
         b.insert(b.end(), v.begin() + j, v.begin() + dx + 1);
 
-    copy(b.rbegin(), b.rend(), v.begin() + sx); // r. per l'ordinamento decrescente
+    copy(b.rbegin(), b.rend(), v.begin() + sx);     // r. per l'ordinamento decrescente
 
 }
 
