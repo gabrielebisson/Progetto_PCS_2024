@@ -1,15 +1,12 @@
 //--------------- MERGE SORT DECRESCENTE--------------------
-
 #pragma once
-
 #include <vector>
-
-using namespace std;
+#include <algorithm> // per std::copy
 
 namespace SortLibrary {
 
 template<typename T>
-void Merge(vector<T>& v,
+void Merge(std::vector<T>& v,
            const unsigned int& sx,
            const unsigned int& cx,
            const unsigned int& dx){
@@ -17,45 +14,39 @@ void Merge(vector<T>& v,
     unsigned int i = sx;
     unsigned int j = cx + 1;
 
-    vector<T> b;
+    std::vector<T> b;
     b.reserve(dx - sx + 1);
 
-    while( i <= cx && j <= dx)
-    {
-        if (v[i] >= v[j])
+    while (i <= cx && j <= dx) {
+        if (std::get<2>(v[i]) >= std::get<2>(v[j])) // Ordinamento decrescente in base alla lunghezza (terzo elemento della tupla)
             b.push_back(v[i++]);
         else
             b.push_back(v[j++]);
     }
 
-    if (i <= cx)
-        b.insert(b.end(), v.begin() + i, v.begin() + cx + 1);
-    if ( j <= dx)
-        b.insert(b.end(), v.begin() + j, v.begin() + dx + 1);
+    while (i <= cx)
+        b.push_back(v[i++]);
+    while (j <= dx)
+        b.push_back(v[j++]);
 
-    copy(b.rbegin(), b.rend(), v.begin() + sx);     // r. per l'ordinamento decrescente
-
+    std::copy(b.begin(), b.end(), v.begin() + sx); // Copia i valori ordinati nel vettore originale
 }
 
 template<typename T>
-void MergeSort(vector<T>& v,
-               const unsigned int& sx,
-               const unsigned int& dx){
-
-    if (sx < dx)
-    {
+void MergeSort(std::vector<T>& v, const unsigned int& sx, const unsigned int& dx) {
+    if (sx < dx) {
         unsigned int cx = (sx + dx) / 2;
         MergeSort(v, sx, cx);
         MergeSort(v, cx + 1, dx);
-
         Merge(v, sx, cx, dx);
     }
-
 }
 
 template<typename T>
-void MergeSort(vector<T>& v){
-    MergeSort(v, 0, v.size()-1);
+void MergeSort(std::vector<T>& v) {
+    if (!v.empty()) {
+        MergeSort(v, 0, v.size() - 1);
+    }
 }
 
 }

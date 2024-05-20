@@ -87,7 +87,7 @@ void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
     }
 
     // Scrive il numero di tracce nel file
-    outFile << "# Number of Traces" << dfn.numTracce << std::endl;
+    outFile << "# Number of Traces" << std::endl << dfn.numTracce << std::endl;
 
     // Scrive l'intestazione delle colonne
     outFile << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2"<< std::endl;
@@ -108,7 +108,7 @@ void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
 
 //----------------- FUNZIONE STAMPA TRACCE PASSANTI - NON PASSANTI -------------------------
 
-void printTracesByFracture(const DFN& dfn, const std::string& filename)
+void printTracesByFracture(const LibraryDFN::DFN& dfn, const std::string& filename)
 {
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {
@@ -125,8 +125,10 @@ void printTracesByFracture(const DFN& dfn, const std::string& filename)
         std::vector<std::tuple<unsigned int, bool, double>> nonPassanti;
 
         for (unsigned int j = 0; j < dfn.numTracce; ++j) {
-            if (dfn.tracce[j][0] == fratturaId || dfn.tracce[j][1] == fratturaId) {
-                bool tips = dfn.tips[j];
+            unsigned int idFrattura1 = dfn.tracce[j][0];
+            unsigned int idFrattura2 = dfn.tracce[j][1];
+            if (idFrattura1 == fratturaId || idFrattura2 == fratturaId) {
+                bool tips = dfn.tips[j][i]; // Leggi lo stato "passante" o "non passante" per la frattura corrente
                 double lunghezza = dfn.lunghezze[j];
                 if (tips) {
                     nonPassanti.emplace_back(j, tips, lunghezza);
@@ -136,16 +138,16 @@ void printTracesByFracture(const DFN& dfn, const std::string& filename)
             }
         }
 
-        // Ordina le tracce per lunghezza in ordine decrescente usando mergesort
-        SortLibrary::MergeSort(passanti, 0, passanti.size() - 1);
-        SortLibrary::MergeSort(nonPassanti, 0, nonPassanti.size() - 1);
+        // Ordina le tracce per lunghezza in ordine decrescente
+        SortLibrary::MergeSort(passanti);
+        SortLibrary::MergeSort(nonPassanti);
 
         // Stampa il numero di tracce della frattura
-        outFile << "# FractureId; NumTraces";
+        outFile << "# FractureId; NumTraces" << std::endl;
         outFile << fratturaId << "; " << (passanti.size() + nonPassanti.size()) << std::endl;
 
         // Stampa le tracce non-passanti
-        outFile << "# TraceId; Tips; Length";
+        outFile << "# TraceId; Tips; Length" << std::endl;
         for (const auto& trace : nonPassanti) {
             outFile << std::get<0>(trace) << "; " << std::get<1>(trace) << "; " << std::get<2>(trace) << std::endl;
         }
@@ -155,9 +157,6 @@ void printTracesByFracture(const DFN& dfn, const std::string& filename)
             outFile << std::get<0>(trace) << "; " << std::get<1>(trace) << "; " << std::get<2>(trace) << std::endl;
         }
     }
-
-    outFile.close();
 }
-
 }
 

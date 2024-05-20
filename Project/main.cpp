@@ -4,6 +4,8 @@
 
 //--------------------- TEST PER manipFile-------------------------
 int main(){
+
+// testiamo la lettura dei file: OK
     // std::string filename = "DFN/FR50_data.txt";
     // LibraryDFN::DFN dfn;
     // LibraryDFN::readDFNFromFile(filename, dfn);
@@ -22,23 +24,37 @@ int main(){
     // }
     // Creazione di un'istanza di DFN con dati di esempio
 
-    LibraryDFN::DFN dfn;
-    dfn.numFratture = 2;
-    dfn.idFratture = {1, 2};
-    dfn.numVertici = {4, 3};
-    dfn.vertici = {
-        {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {0.0, 1.0, 0.0}},
-        {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}}
-    };
-    dfn.numTracce = 4;
-    dfn.idTracce = {1, 2, 3, 4};
-    dfn.tracce = {{1, 2}, {2, 3}, {1, 3}, {2, 4}};
-    dfn.estremiTracce = {{0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, {1.0, 0.0, 0.0, 1.0, 1.0, 0.0}, {0.0, 0.0, 0.0, 1.0, 1.0, 0.0}, {1.0, 0.0, 0.0, 0.0, 1.0, 0.0}};
-    dfn.tips = {true, false, true, false};
-    dfn.lunghezze = {1.0, 1.0, 1.4142, 1.0}; // lunghezza della traccia
+// testare il primo output: OK
+//     // Creazione di un'istanza della struttura DFN
+//     LibraryDFN::DFN dfn;
 
-    // Chiamata alla funzione per stampare le tracce per frattura
-    LibraryDFN::printTracesByFracture(dfn, "result.txt");
+//     // Popolamento dei dati della struttura (esempio di dati casuali)
+//     dfn.numTracce = 2;
+//     dfn.idTracce = {1, 2};
+//     dfn.tracce = {{1, 2}, {2, 3}};
+//     dfn.estremiTracce = {{0.0, 0.0, 0.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 2.0, 2.0, 2.0}};
+
+//     // Chiamata alla funzione per stampare le tracce su un file
+//     printTraces(dfn, "tracce.txt");
+
+//     std::cout << "Tracce stampate con successo." << std::endl;
+
+//     // return 0;
+
+
+// testare secondo output: OK
+    // //Creazione di un'istanza di DFN con dati di esempio
+    // LibraryDFN::DFN dfn;
+    // dfn.numFratture = 2;
+    // dfn.idFratture = {1, 2};
+    // dfn.numTracce = 4;
+    // dfn.tracce = {{1, 2}, {2, 3}, {1, 3}, {2, 4}};
+    // dfn.tips = {{{true, false}}, {{false, true}}, {{true, false}}, {{false, true}}};
+    // dfn.lunghezze = {1.0, 2.0, 1.5, 1.8};
+
+    // // Chiamata alla funzione per stampare le tracce per frattura
+    // printTracesByFracture(dfn, "Output2.txt");
+    // std::cout << "Seconda stampa terminata con successo." << std::endl;
 
     return 0;
 }
