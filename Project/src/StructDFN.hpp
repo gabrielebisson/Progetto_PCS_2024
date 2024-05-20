@@ -20,11 +20,5 @@ struct DFN {
     std::vector<bool> tips; // vero se non passante, falso se passante
     std::vector<double> lunghezze; // lunghezza della traccia
 
-
-    //magari per ora teniamo la struttura come vettore dio array, se poi conviene mettere MatrixXd la mettiamo, quello che cambia è l'accesso ai dati
-    //Matrix<double,3,Dynamic>
-    //vettore di array: vertici[i][j][k]
-    //MatrixXd: vertici[i](j,k) (su Eigen a quanto ho letto il primo indice indica la colonna, il secondo la riga)
-
 };
 }
