@@ -125,9 +125,7 @@ void printTracesByFracture(const LibraryDFN::DFN& dfn, const std::string& filena
         std::vector<std::tuple<unsigned int, bool, double>> nonPassanti;
 
         for (unsigned int j = 0; j < dfn.numTracce; ++j) {
-            unsigned int idFrattura1 = dfn.tracce[j][0];
-            unsigned int idFrattura2 = dfn.tracce[j][1];
-            if (idFrattura1 == fratturaId || idFrattura2 == fratturaId) {
+            if (dfn.tracce[j][0] == fratturaId || dfn.tracce[j][1] == fratturaId) {
                 bool tips = dfn.tips[j][i]; // Leggi lo stato "passante" o "non passante" per la frattura corrente
                 double lunghezza = dfn.lunghezze[j];
                 if (tips) {

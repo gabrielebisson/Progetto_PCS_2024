@@ -42,19 +42,19 @@ int main(){
 //     // return 0;
 
 
-// testare secondo output: OK
-    // //Creazione di un'istanza di DFN con dati di esempio
-    // LibraryDFN::DFN dfn;
-    // dfn.numFratture = 2;
-    // dfn.idFratture = {1, 2};
-    // dfn.numTracce = 4;
-    // dfn.tracce = {{1, 2}, {2, 3}, {1, 3}, {2, 4}};
-    // dfn.tips = {{{true, false}}, {{false, true}}, {{true, false}}, {{false, true}}};
-    // dfn.lunghezze = {1.0, 2.0, 1.5, 1.8};
+    //testare secondo output: OK
+    //Creazione di un'istanza di DFN con dati di esempio
+    LibraryDFN::DFN dfn;
+    dfn.numFratture = 2;
+    dfn.idFratture = {1, 2};
+    dfn.numTracce = 4;
+    dfn.tracce = {{1, 2}, {2, 3}, {1, 3}, {2, 4}};
+    dfn.tips = {{{true, false}}, {{false, true}}, {{true, false}}, {{false, true}}};
+    dfn.lunghezze = {1.0, 2.0, 1.5, 1.8};
 
-    // // Chiamata alla funzione per stampare le tracce per frattura
-    // printTracesByFracture(dfn, "Output2.txt");
-    // std::cout << "Seconda stampa terminata con successo." << std::endl;
+    // Chiamata alla funzione per stampare le tracce per frattura
+    printTracesByFracture(dfn, "Output2.txt");
+    std::cout << "Seconda stampa terminata con successo." << std::endl;
 
     return 0;
 }
