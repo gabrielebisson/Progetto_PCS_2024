@@ -8,7 +8,7 @@ namespace LibraryDFN{
 
 
 //funzione che suddivide la frattura in triangoli (assumo che i vertici del poligono non siano allineati)
-std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,unsigned int idr) //idr=id relativo, nel senso che è l'indice del vettore numvertices
+std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,unsigned int idr) //idr=id relativo, nel senso che è l'indice del vettore numVertici
 {
     std::vector<std::array<unsigned int,3>> triangolazione;
     triangolazione.reserve(disc_frac_net.numVertici[idr]-2);

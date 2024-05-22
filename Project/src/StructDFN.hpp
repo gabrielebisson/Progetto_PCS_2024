@@ -11,10 +11,6 @@ namespace LibraryDFN{
         std::vector<unsigned int> idFratture; //vettore degli id dei vettori (bisogna leggerli, non serve aggiungerne di nuovi dopo la fine della lettura da file)
         std::vector<unsigned int> numVertici; //vettore di numeri di vertici di ogni frattura (ordinati nel modo numVertici[i]= numero vertici della frattura idFratture[i]) (se non mi sbaglio serve a qualcosa, in lettura, non in scrittura)
         std::vector<std::vector<Eigen::Vector3d>> vertici; //vettore di matrici di dimensione 3x(numero vertici), ogni array individua le coordinate x, y, z del punto (ordinati nel modo vertici[i]= insieme delle coordinate dei vertici della frattura idFratture[i] in senso antiorario) (serve in lettura, non in scrittura)
-        //magari per ora teniamo la struttura come vettore dio array, se poi conviene mettere MatrixXd la mettiamo, quello che cambia è l'accesso ai dati
-        //Matrix<double,3,Dynamic>
-        //vettore di array: vertici[i][j][k]
-        //MatrixXd: vertici[i](j,k) (su Eigen a quanto ho letto il primo indice indica la colonna, il secondo la riga)
 
         //tracce
         unsigned int numTracce; //è numero delle tracce
