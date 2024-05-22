@@ -23,6 +23,7 @@ void readDFNFromFile(const std::string& filename, DFN& dfn)
 
     // Leggere le fratture
     std::getline(file, line);
+    // Salto la riga
     std::getline(file, line);
     dfn.numFratture = std::stoi(line);
 
