@@ -1,6 +1,4 @@
 // Funzioni per manipolare i file di input e di output
-#pragma once
-
 #include "MergeSort.hpp"
 #include "Utils.hpp"
 #include <fstream>
