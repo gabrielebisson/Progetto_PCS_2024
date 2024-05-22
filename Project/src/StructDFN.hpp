@@ -4,6 +4,7 @@
 #include "Eigen/Eigen"
 
 namespace LibraryDFN{
+
 struct DFN {
 
     //fratture

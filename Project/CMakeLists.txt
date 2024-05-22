@@ -54,8 +54,3 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN
 target_link_libraries(${PROJECT_NAME} ${DFN_LINKED_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_NAME_PROJECT}_includes})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
-
-
-
-
-
