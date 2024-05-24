@@ -62,10 +62,10 @@ void readDFNFromFile(const std::string& filename, DFN& dfn)
                     vertices.emplace_back(Eigen::Vector3d(0., 0., 0.));
                 }
                 iss2 >> vertices[k](j) >> sep;
-                    }
-                }
+            }
+        }
 
-                dfn.vertici.push_back(vertices);
+        dfn.vertici.push_back(vertices);
     }
 
     file.close();
@@ -95,9 +95,8 @@ void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
     for (unsigned int i = 0; i < dfn.numTracce; ++i) {
         outFile << dfn.idTracce[i] << "; "
                 << dfn.tracce[i][0] << "; " << dfn.tracce[i][1] << "; "
-                << dfn.estremiTracce[i][0] << "; " << dfn.estremiTracce[i][1] << "; "
-                << dfn.estremiTracce[i][2] << "; " << dfn.estremiTracce[i][3] << "; "
-                << dfn.estremiTracce[i][4] << "; " << dfn.estremiTracce[i][5] << std::endl;
+                << dfn.estremiTracce[i][0][0] << "; " << dfn.estremiTracce[i][0][1] << "; " << dfn.estremiTracce[i][0][2] << "; "
+                <<  dfn.estremiTracce[i][1][0] << "; " << dfn.estremiTracce[i][1][1] << "; " << dfn.estremiTracce[i][1][2] << std::endl;
     }
 
     // Chiude il file
@@ -156,4 +155,3 @@ void printTracesByFracture(const LibraryDFN::DFN& dfn, const std::string& filena
     }
 }
 }
-

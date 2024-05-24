@@ -1,4 +1,5 @@
 #include"Utils.hpp"
+#include <cassert>
 
 using namespace Eigen;
 
@@ -27,6 +28,7 @@ std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,un
 std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net)
 {
     std::vector<std::array<unsigned int,2>> indici_validi; //vettore finale di output con gli indici che non hanno passato il test
+    //ATTENZIONE ALL'OVERFLOW NEL PROSSIMO PASSAGGIO, PROBABILMENTE E' DA CAMBIARE
     indici_validi.reserve(disc_frac_net.numFratture*(disc_frac_net.numFratture-1)/2); //al massimo ho n su 2 coppie
     std::vector<std::tuple<unsigned int,Vector3d,double>> info_baricentro; //vettore con tutte le info da confrontare per effettuare il test
     info_baricentro.reserve(disc_frac_net.numFratture);
@@ -95,8 +97,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
     //--------- passo 1 ---------
     //scrematura grossolana delle fratture che sicuramente non si intersecano
-    std::vector<std::array<unsigned int,2>> fratture_suscettibili;
-    fratture_suscettibili=scarta_fratture(disc_frac_net);
+    std::vector<std::array<unsigned int,2>> fratture_suscettibili=scarta_fratture(disc_frac_net);
 
     //--------- passo 2 ---------
     //riservo spazio per memorizzare i dati sulle varie strutture dati
@@ -114,7 +115,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         //--------- output di ogni intersezione ---------
         std::array<unsigned int,2> tip={0,0};
         std::array<Eigen::Vector3d,2> est_tra={Eigen::Vector3d(NAN,NAN,NAN),Eigen::Vector3d(NAN,NAN,NAN)};
-        auto iteratore=est_tra.begin();
+        unsigned int pos=0; //è l'indice di riempimento di est_tra, ossia indica la posizione libera di est_tra (se pos==2 vuol dire che è pieno)
 
         //--------- passo 4 ---------
         //ruoto i poligoni sul piano xy per rendere più facili i confronti dopo
@@ -142,7 +143,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[1]];i++)
         {
             //std::cout << i <<std::endl;
-            if(!(vertici_ruotati_2[i](2)*vertici_ruotati_2[i+1](2)>tol)) //controlla che il lato intersechi effettivamente il piano che contiene la frattura 1
+            if(!(vertici_ruotati_2[i](2)*vertici_ruotati_2[(i+1)%disc_frac_net.numVertici[coppia[1]]](2)>tol)) //controlla che il lato intersechi effettivamente il piano che contiene la frattura 1
             {
                 //--------- passo 7 ---------
                 //ciclo su tutti i triangoli della prima frattura nella coppia
@@ -159,42 +160,42 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
                     //--------- passo 8 ---------
                     //controllo se la soluzione trovata appartiene al triangolo
-                    if(x(0)>=-tol && x(1)>=-tol && !(x(0)+x(1)-1>tol) && x(2)<=1.+tol && x(2)>=-tol)
+                    if(x(0)>=-tol && x(1)>=-tol && x(0)+x(1)<=1.+tol && x(2)<=1.+tol && x(2)>=-tol) //l'ultimo controllo non dovrebbe servire ma per ora lo tengo
                     {
                         Eigen::Vector3d y=0.5*(disc_frac_net.vertici[coppia[1]][i]+x(2)*(-mat_coeff.col(2))+disc_frac_net.vertici[coppia[0]][triangolo[0]]+x(0)*mat_coeff.col(0)+x(1)*mat_coeff.col(1));
-                        *iteratore=y;
+                        est_tra[pos]=y;
                         tip[1]+=1;
 
                         //--------- passo 9 ---------
                         //controllo che il nuovo estremo non sia uguale all'eventuale estremo già trovato precedente
-                        if(iteratore!=est_tra.begin())//devo fare 2 in innestati in quanto c'è comportamento indefinito quando iteratore=est_tra.begin() e faccio *(iteratore-1)
+                        if(pos!=0)//devo fare 2 in innestati in quanto c'è comportamento indefinito quando pos=0 e faccio est_tra[pos-1]
                         {
-                            if(!((y-*(iteratore-1)).norm()/std::max(std::max(y.norm(),(iteratore-1)->norm()),1.)>tol))
+                            if(!((y-est_tra[pos-1]).norm()/std::max(std::max(y.norm(),est_tra[pos-1].norm()),1.)>tol))
                             {
-                                *iteratore=Vector3d(NAN,NAN,NAN);
-                                --iteratore;
+                                est_tra[pos]=Vector3d(NAN,NAN,NAN);
+                                pos+=-1;
                                 tip[1]+=-1;
                             }
                         }
                         //--------- passo 10 ---------
                         //controllo se la soluzione trovata appartiene al bordo del primo poligono nella coppia
-                        if(!(abs(x(0)+x(1)-1.)>tol) || (!(abs(x(0)-1)>tol) && !(abs(x(1))>tol) && (triangolo[1]%disc_frac_net.numVertici[coppia[0]]-triangolo[0]==1)) || (!(abs(x(1)-1)>tol) && !(abs(x(0))>tol) && (triangolo[2]%disc_frac_net.numVertici[coppia[0]]-triangolo[0]==1)))
+                        if((x(0)+x(1)>=1.-tol && x(0)+x(1)<=1.+tol) || (x(0)<=1.+tol && !(abs(x(1))>tol) && (triangolo[1]==1)) || (x(1)<=1.+tol && !(abs(x(0))>tol) && (triangolo[2]==disc_frac_net.numVertici[coppia[0]]-1)))
                         {
                             tip[0]+=1;
                         }
-                        iteratore++;
+                        pos++;
                         break; //dato che ho trovato che un estremo della traccia appartiene ad un triangolo, non devo controllare che appartenga ai triangoli successivi
                     }
                 }
             }
-            if(iteratore==est_tra.end()) //se ho trovato tutti e 2 gli estremi della traccia, ho finito
+            if(pos==2) //se ho trovato tutti e 2 gli estremi della traccia, ho finito
             {
                 break;
             }
         }
         //--------- passo 11 ---------
         //se non ho trovato tutti e 2 gli estremi della traccia, vado avanti e ciclo sui lati della prima frattura della coppia e sui triangoli della seconda frattura della coppia per trovare l'altro/gli estremo/i della traccia
-        if(iteratore!=est_tra.end())
+        if(pos!=2)
         {
             //non ricommento tutto in quanto è molto simile a prima (però non è proprio uguale identico, ci sono alcuni passaggi che qua non servono più)
             mat_rot=allinea_xy(disc_frac_net.vertici[coppia[1]]);
@@ -209,10 +210,10 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
             triangolazione=triangola_frattura(disc_frac_net,coppia[1]);
 
-            for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[1]];i++)
+            for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
                 //std::cout << i <<std::endl;
-                if(!(vertici_ruotati_1[i](2)*vertici_ruotati_1[i+1](2)>tol))
+                if(!(vertici_ruotati_1[i](2)*vertici_ruotati_1[(i+1)%disc_frac_net.numVertici[coppia[0]]](2)>tol))
                 {
                     for(auto& triangolo:triangolazione)
                     {
@@ -224,31 +225,30 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
                         mat_coeff.col(2)=disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[0]][(i+1)%disc_frac_net.numVertici[coppia[0]]];
                         Eigen::Vector3d x=mat_coeff.lu().solve(b);
                         //std::cout << x<<std::endl;
-                        if(x(0)>=-tol&& x(1)>=-tol && !(x(0)+x(1)-1>tol) && x(2)<=1.+tol && x(2)>=-tol)
+                        if(x(0)>=-tol && x(1)>=-tol && x(0)+x(1)<=1.+tol && x(2)<=1.+tol && x(2)>=-tol)
                         {
                             Eigen::Vector3d y=0.5*(disc_frac_net.vertici[coppia[0]][i]+x(2)*(-mat_coeff.col(2))+disc_frac_net.vertici[coppia[1]][triangolo[0]]+x(0)*mat_coeff.col(0)+x(1)*mat_coeff.col(1));
-                            *iteratore=y;
+                            est_tra[pos]=y;
                             tip[0]+=1;
-                            if(iteratore!=est_tra.begin())
+                            if(pos!=0)
                             {
-                                if(!((y-*(iteratore-1)).norm()/std::max(std::max(y.norm(),(iteratore-1)->norm()),1.)>tol))
+                                if(!((y-est_tra[pos-1]).norm()/std::max(std::max(y.norm(),est_tra[pos-1].norm()),1.)>tol))
                                 {
-                                    *iteratore=Vector3d(NAN,NAN,NAN);
-                                    --iteratore;
+                                    est_tra[pos]=Vector3d(NAN,NAN,NAN);
+                                    pos+=-1;
                                     tip[0]+=-1;
                                 }
                             }
-                            if(!(abs(x(0)+x(1)-1.)>tol) || (!(abs(x(0)-1)>tol) && !(abs(x(1))>tol) && (triangolo[1]%disc_frac_net.numVertici[coppia[0]]-triangolo[0]==1)) || (!(abs(x(1)-1)>tol) && !(abs(x(0))>tol) && (triangolo[2]%disc_frac_net.numVertici[coppia[0]]-triangolo[0]==1)))
+                            if((x(0)+x(1)>=1.-tol && x(0)+x(1)<=1.+tol) || (x(0)<=1.+tol && !(abs(x(1))>tol) && (triangolo[1]==1)) || (x(1)<=1.+tol && !(abs(x(0))>tol) && (triangolo[2]==disc_frac_net.numVertici[coppia[1]]-1)))
                             {
                                 tip[0]+=1;
                             }
-
-                            iteratore++;
+                            pos++;
                             break;
                         }
                     }
                 }
-                if(iteratore==est_tra.end())
+                if(pos==2)
                 {
                     break;
                 }
@@ -256,7 +256,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         }
         //--------- passo 12 ---------
         //memorizzo i risultati e stampo un output dei risultati trovati
-        if(iteratore==est_tra.end()) //se effettivamente ho trovato tutti e 2 gli estremi della traccia e non solo un punto di intersezione, che non contiamo
+        if(pos==2) //se effettivamente ho trovato tutti e 2 gli estremi della traccia e non solo un punto di intersezione, che non contiamo
         {
             disc_frac_net.idTracce.push_back(idt);
             std::cout << "TRACCIA "<<idt<<":"<<std::endl;
@@ -274,6 +274,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
             std::cout << "-----------------------------------------------------"<<std::endl;
             idt++;
         }
+        //std::cout<<"++++++++++++++++++++++++"<<std::endl;
     }
     disc_frac_net.numTracce=idt;
     std::cout << "Alla fine sono state trovate "<<idt<<" tracce"<<std::endl;
