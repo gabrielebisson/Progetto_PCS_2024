@@ -55,28 +55,7 @@ target_link_libraries(${PROJECT_NAME} ${DFN_LINKED_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_NAME_PROJECT}_includes})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
-# Create GTest executable
+# Add tests
 ################################################################################
-# Assuming you have a `test` directory with test sources like `test_main.cpp`
-set(GTEST_SOURCES
-	runGtest.cpp  # Aggiungi i tuoi file di test qui
-	readFileTest.hpp
-)
-
-# Aggiungi tutti gli header file dei test necessari
-set(GTEST_HEADERS
-    readFileTest.hpp
-    # Aggiungi altri file header dei test, se necessario
-)
-
-add_executable(runGtest ${GTEST_SOURCES} ${GTEST_HEADERS})
-target_link_libraries(runGtest ${DFN_LINKED_LIBRARIES})
-
-# Aggiungi il percorso delle cartelle contenenti i file .hpp
-target_include_directories(runGtest PRIVATE 
-    ${${CMAKE_NAME_PROJECT}_includes}  # Include le cartelle del progetto principale
-    ${CMAKE_SOURCE_DIR}/src  # Include la cartella src del progetto principale
-    # Aggiungi altre cartelle di inclusione, se necessario
-)
-
-target_compile_options(runGtest PUBLIC -fPIC)
+enable_testing()
+add_subdirectory(gtest)
