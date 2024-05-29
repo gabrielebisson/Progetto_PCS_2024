@@ -44,18 +44,24 @@ list(APPEND "${CMAKE_NAME_PROJECT}_headers" ${src_headers})
 list(APPEND "${CMAKE_NAME_PROJECT}_includes" ${src_includes})
 list(APPEND "${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES" ${src_includes})
 
+add_subdirectory(gtest)
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_sources" ${gtest_sources})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_headers" ${gtest_headers})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_includes" ${gtest_includes})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_LINKED_LIBRARIES" ${gtest_includes})
+
 # Create executable
 ################################################################################
 
 add_executable(${CMAKE_PROJECT_NAME} main.cpp ${${CMAKE_NAME_PROJECT}_sources} ${${CMAKE_NAME_PROJECT}_headers})
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(${PROJECT_NAME} ${DFN_LINKED_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_NAME_PROJECT}_includes})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
-# Add tests
-################################################################################
-enable_testing()
-add_subdirectory(gtest)
+add_executable(${CMAKE_PROJECT_NAME}_TEST runGtest.cpp ${${CMAKE_NAME_PROJECT}_sources} ${${CMAKE_NAME_PROJECT}_headers} ${${CMAKE_NAME_PROJECT}_TEST_sources} ${${CMAKE_NAME_PROJECT}_TEST_headers})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(${CMAKE_PROJECT_NAME}_TEST ${${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES} ${${CMAKE_NAME_PROJECT}_TEST_LINKED_LIBRARIES})
+target_include_directories(${CMAKE_PROJECT_NAME}_TEST PUBLIC ${${CMAKE_NAME_PROJECT}_includes} ${${CMAKE_NAME_PROJECT}_TEST_includes})
+target_compile_options(${PROJECT_NAME}_TEST PUBLIC -fPIC)

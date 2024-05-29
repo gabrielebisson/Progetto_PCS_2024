@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <gtest/gtest.h>
-#include "readFileTest.hpp"
 #include "StructDFN.hpp"
 #include "Eigen/Eigen"
 

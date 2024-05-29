@@ -1,26 +1,9 @@
+list(APPEND gtest_sources "${CMAKE_CURRENT_SOURCE_DIR}/readFileTest.hpp")
 
-# gtest/CMakeLists.txt
+list(APPEND gtest_headers "${CMAKE_CURRENT_SOURCE_DIR}/readFileTest.hpp")
 
-# Include headers from the main project
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/gtest)
+list(APPEND gtest_includes ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Add test sources
-set(TEST_SOURCES
-    runGtest.cpp
-   )
-
-# Optionally, you can list header files for clarity
-set(TEST_HEADERS
-    readFileTest.hpp  # aggiungi qui i file header
-)
-
-
-# Create GTest executable
-add_executable(GTest ${TEST_SOURCES} ${TEST_HEADERS})
-
-# Link GTest executable with required libraries
-target_link_libraries(GTest PRIVATE ${DFN_LINKED_LIBRARIES})
-
-# Add test
-add_test(NAME GTest COMMAND GTest)
+set(gtest_sources ${gtest_sources} PARENT_SCOPE)
+set(gtest_headers ${gtest_headers} PARENT_SCOPE)
+set(gtest_includes ${gtest_includes} PARENT_SCOPE)
