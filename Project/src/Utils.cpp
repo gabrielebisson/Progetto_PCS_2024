@@ -120,15 +120,14 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         //--------- passo 4 ---------
         //ruoto i poligoni sul piano xy per rendere più facili i confronti dopo
         Eigen::Matrix<double,3,3> mat_rot=allinea_xy(disc_frac_net.vertici[coppia[0]]);
-        std::vector<Eigen::Vector3d> vertici_ruotati_1={Eigen::Vector3d(0.,0.,0.)}; //prima frattura
-        vertici_ruotati_1.resize(disc_frac_net.numVertici[coppia[0]]);
+        //std::vector<Eigen::Vector3d> vertici_ruotati_1={Eigen::Vector3d(0.,0.,0.)}; //prima frattura
         std::vector<Eigen::Vector3d> vertici_ruotati_2={}; //seconda frattura
         vertici_ruotati_2.resize(disc_frac_net.numVertici[coppia[1]]);
 
-        for(unsigned int i=1;i<disc_frac_net.numVertici[coppia[0]];i++)
-        {
-            vertici_ruotati_1[i]=mat_rot*(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[0]][0]);
-        }
+        // for(unsigned int i=1;i<disc_frac_net.numVertici[coppia[0]];i++)
+        // {
+        //     vertici_ruotati_1[i]=mat_rot*(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[0]][0]);
+        // }
         for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[1]];i++)
         {
             vertici_ruotati_2[i]=mat_rot*(disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[0]][0]);
@@ -199,10 +198,12 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         {
             //non ricommento tutto in quanto è molto simile a prima (però non è proprio uguale identico, ci sono alcuni passaggi che qua non servono più)
             mat_rot=allinea_xy(disc_frac_net.vertici[coppia[1]]);
-            for(unsigned int i=1;i<disc_frac_net.numVertici[coppia[1]];i++)
-            {
-                vertici_ruotati_2[i]=mat_rot*(disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[1]][0]);
-            }
+            std::vector<Eigen::Vector3d> vertici_ruotati_1;
+            vertici_ruotati_1.resize(disc_frac_net.numVertici[coppia[0]]);
+            // for(unsigned int i=1;i<disc_frac_net.numVertici[coppia[1]];i++)
+            // {
+            //     vertici_ruotati_2[i]=mat_rot*(disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[1]][0]);
+            // }
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
                 vertici_ruotati_1[i]=mat_rot*(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[1]][0]);
@@ -278,5 +279,25 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
     }
     disc_frac_net.numTracce=idt;
     std::cout << "Alla fine sono state trovate "<<idt<<" tracce"<<std::endl;
+}
+//=====================================================================================================
+
+
+
+
+//funzione che trova l'intersezione tra 2 segmenti
+std::tuple<Vector3d,bool> interseca_segmenti(const Vector3d& A1,const Vector3d& A2,const Vector3d& B1,const Vector3d& B2,const double& tol)
+{
+    Vector3d n=(A2-A1).normalized();
+    Vector3d v=B2-B1;
+    double alfa=(-v.dot(B1-A1-(1/(A2-A1).norm())*n))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
+    n=(B2-B1).normalized();
+    v=A2-A1;
+    double beta=(-v.dot(A1-B1-(1/(B2-B1).norm())*n))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
+    Vector3d x=/*0.5*(*/B1+alfa*(B2-B1)/*+A1+alfa*(A2-A1))*/;
+    Vector3d y=A1+beta*(A2-A1);
+    bool interno (alfa<1+tol && alfa>-tol && beta<1+tol && beta>-tol);
+    std::tuple<Vector3d,bool> tupla(x,interno);
+    return tupla;
 }
 }
