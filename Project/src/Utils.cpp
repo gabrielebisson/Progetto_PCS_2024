@@ -290,14 +290,15 @@ std::tuple<Vector3d,bool> interseca_segmenti(const Vector3d& A1,const Vector3d& 
 {
     Vector3d n=(A2-A1).normalized();
     Vector3d v=B2-B1;
-    double alfa=(-v.dot(B1-A1-(1/(A2-A1).norm())*n))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
+    Vector3d w=B1-A1;
+    double alfa=(v.dot(w.dot(n)*n-w))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
+
     n=(B2-B1).normalized();
     v=A2-A1;
-    double beta=(-v.dot(A1-B1-(1/(B2-B1).norm())*n))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
-    Vector3d x=/*0.5*(*/B1+alfa*(B2-B1)/*+A1+alfa*(A2-A1))*/;
-    Vector3d y=A1+beta*(A2-A1);
-    bool interno (alfa<1+tol && alfa>-tol && beta<1+tol && beta>-tol);
-    std::tuple<Vector3d,bool> tupla(x,interno);
-    return tupla;
+    w=-w;
+    double beta=(v.dot(w.dot(n)*n-w))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
+    Vector3d x=0.5*(B1+alfa*(B2-B1)+A1+beta*(A2-A1));
+    bool interno=(alfa<1+tol && alfa>-tol && beta<1+tol && beta>-tol);
+    return std::make_tuple(x,interno);
 }
 }
