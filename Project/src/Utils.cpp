@@ -22,6 +22,31 @@ std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,un
 }
 
 
+//funzione che trova il versore perpendicolare al piano che contiene il poligono
+// inline Vector3d versore_normale(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono)
+// {
+//     Vector3d versore(NAN,NAN,NAN);
+//     for(unsigned int i=1;i<poligono.size()-1;i++)
+//     {
+//         versore+=1./(poligono.size()-2)*(disc_frac_net.vertici[poligono[i]]-disc_frac_net.vertici[poligono[0]]).cross(disc_frac_net.vertici[poligono[i+1]]-disc_frac_net.vertici[poligono[0]]);
+//     }
+//     versore.normalize();
+//     return versore;
+// }
+
+
+
+
+//funzione che trova se un punto è interno
+// bool interno_poligono(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono,const Vector3d& x, const double& tol)
+// {
+//     for(unsigned int i=0;i<poligono.size();i++)
+//     {
+
+//     }
+// }
+
+
 
 
 //funzione che scarta le fratture che sicuramente non si intersecano, l'output è un vettore di indici degli indici di DFN.idfratture che non sono stati scartati, quindi su cui bisogna controllare manualmente se si intersechino
@@ -285,7 +310,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
 
 
-//funzione che trova l'intersezione tra 2 segmenti
+//funzione che trova l'intersezione tra 2 segmenti, in verità trova il punto medio del segmento di lunghezza minima che collega i 2 segmenti, che, se i 2 segmenti sono complanari, coincide con il punto di intersezione
 std::tuple<Vector3d,bool> interseca_segmenti(const Vector3d& A1,const Vector3d& A2,const Vector3d& B1,const Vector3d& B2,const double& tol)
 {
     Vector3d n=(A2-A1).normalized();

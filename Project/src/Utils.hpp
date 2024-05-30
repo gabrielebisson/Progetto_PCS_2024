@@ -16,4 +16,6 @@ namespace LibraryDFN
     Eigen::Matrix<double,3,3> allinea_xy(const std::vector<Eigen::Vector3d>& vertici);
     void memorizza_tracce(DFN& disc_frac_net,double tol);
     std::tuple<Eigen::Vector3d,bool> interseca_segmenti(const Eigen::Vector3d& A1,const Eigen::Vector3d& A2,const Eigen::Vector3d& B1,const Eigen::Vector3d& B2,const double& tol);
+    // inline Eigen::Vector3d versore_normale(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono);
+
 }
