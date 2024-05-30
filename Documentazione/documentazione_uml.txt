@@ -1,0 +1,48 @@
+@startuml 'plantUML
+package LibreriaGeometrica <<Folder>> 
+' folder fa l'immaginina della cartella, package=namespace
+{
+class Triangolo
+{
++ vertici:Matrix3d  '+=pubblico :=tipo
++ Triangolo(Vertici)
++ double CalcolaArea()  'testo() indica il metodo
+}
+
+class Poligoni
+{
++ Vertici:MatrixXd
++ listaPoligoni: vector<vector<unsigned int>>
++ v<v<v<unsigned int>>> Triangola()
++ vector<double> calcolaArea()
++ void gedimInterfaccia(v<v<v<unsigned int>>>&)
+..Non member functions..
+void ImportaPoligoni(percorso,poligoni)
+..TEST POLIGONI..
+TEST_CALCOLO_AREA
+TEST_TRIANGOLAZIONE
+}
+}
+
+package Gedim <<Frame>>
+{
+}
+
+package Gedim <<Frame>>
+{
+}
+
+note "Gedim è una libreria esterna" as GedimN
+GedimN .. Gedim 'nota associata a Gedim
+
+Gedim ..> Poligoni::gedimInterfaccia
+'sta funzione strutta Gedim 
+
+note "Eigen è una libreria esterna" as EigwnN
+EigenN .. Eigen
+
+'voglio far capire che un poligono è costituito da molti triangoli, quindi posso fare
+Triangolo "many" ..o "1" Poligoni :qua scrivo le note  'Poligoni può vivere senza Triangolo, ma non il viceversa in questo caso
+
+'commento
+@enduml
