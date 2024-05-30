@@ -44,11 +44,11 @@ list(APPEND "${CMAKE_NAME_PROJECT}_headers" ${src_headers})
 list(APPEND "${CMAKE_NAME_PROJECT}_includes" ${src_includes})
 list(APPEND "${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES" ${src_includes})
 
-add_subdirectory(gtest)
-list(APPEND "${CMAKE_NAME_PROJECT}_TEST_sources" ${gtest_sources})
-list(APPEND "${CMAKE_NAME_PROJECT}_TEST_headers" ${gtest_headers})
-list(APPEND "${CMAKE_NAME_PROJECT}_TEST_includes" ${gtest_includes})
-list(APPEND "${CMAKE_NAME_PROJECT}_TEST_LINKED_LIBRARIES" ${gtest_includes})
+add_subdirectory(googleTest)
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_sources" ${googleTest_sources})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_headers" ${googleTest_headers})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_includes" ${googleTest_includes})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_LINKED_LIBRARIES" ${googleTest_includes})
 
 # Create executable
 ################################################################################
