@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <fstream>
 #include "StructDFN.hpp"
 #include "Utils.hpp"
 
@@ -46,3 +47,89 @@ TEST(ReadDFNFromFileTest, ValidInputFile) {
     EXPECT_EQ(dfn.vertici[2][3], Eigen::Vector3d(-0.23777799999999999, 0.5, 0.45283889999999999));
 }
 
+// Test per la funzione printTraces
+TEST(PrintTracesTest, ValidOutput) {
+    LibraryDFN::DFN dfn;
+
+    // Dati di test
+    dfn.numTracce = 2;
+    dfn.idTracce = {0, 1};
+    dfn.tracce = {{0, 1}, {1, 2}};
+    dfn.estremiTracce = {
+        {{Eigen::Vector3d(0.0, 0.0, 0.0), Eigen::Vector3d(1.0, 1.0, 1.0)}},
+        {{Eigen::Vector3d(1.0, 1.0, 1.0), Eigen::Vector3d(2.0, 2.0, 2.0)}}
+    };
+
+    std::string tempFilename = "temp_output.txt"; // file temporaneo
+    printTraces(dfn, tempFilename);
+
+    std::ifstream inFile(tempFilename); // leggo file
+    ASSERT_TRUE(inFile.is_open());
+
+    std::string line;
+    std::vector<std::string> lines;
+    while (std::getline(inFile, line)) {
+        lines.push_back(line);
+    }
+    inFile.close();
+
+    std::remove(tempFilename.c_str());
+
+    // Verifico output atteso
+    ASSERT_EQ(lines.size(), 5);
+    EXPECT_EQ(lines[0], "# Number of Traces");
+    EXPECT_EQ(lines[1], "2");
+    EXPECT_EQ(lines[2], "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2");
+    EXPECT_EQ(lines[3], "0; 0; 1; 0; 0; 0; 1; 1; 1");
+    EXPECT_EQ(lines[4], "1; 1; 2; 1; 1; 1; 2; 2; 2");
+}
+TEST(PrintTracesByFractureTest, ValidOutput) {
+    LibraryDFN::DFN dfn;
+
+    // Dati di test
+    dfn.numFratture = 3;
+    dfn.idFratture = {0, 1, 2};
+    dfn.numTracce = 3;
+    dfn.idTracce = {0, 1, 2};
+    dfn.tracce = {{0, 1}, {1, 0}, {0, 1}};
+    dfn.tips = {{false, true}, {true, false}, {false, false}};
+    dfn.lunghezze = {10.0, 20.0, 15.0};
+
+    std::string tempFilename = "temp_fracture_output.txt";
+    printTracesByFracture(dfn, tempFilename);
+
+    std::ifstream inFile(tempFilename);
+    ASSERT_TRUE(inFile.is_open());
+
+    std::string line;
+    std::vector<std::string> lines;
+    while (std::getline(inFile, line)) {
+        lines.push_back(line);
+    }
+    inFile.close();
+
+    std::remove(tempFilename.c_str());
+
+    ASSERT_EQ(lines.size(), 15);
+
+    // prima frattura
+    EXPECT_EQ(lines[0], "# FractureId; NumTraces");
+    EXPECT_EQ(lines[1], "0; 3");
+    EXPECT_EQ(lines[2], "# TraceId; Tips; Length");
+    EXPECT_EQ(lines[3], "1; 1; 20");
+    EXPECT_EQ(lines[4], "2; 0; 15");
+    EXPECT_EQ(lines[5], "0; 0; 10");
+
+    // seconda frattura
+    EXPECT_EQ(lines[6], "# FractureId; NumTraces");
+    EXPECT_EQ(lines[7], "1; 3");
+    EXPECT_EQ(lines[8], "# TraceId; Tips; Length");
+    EXPECT_EQ(lines[9], "0; 1; 10");
+    EXPECT_EQ(lines[10], "1; 0; 20");
+    EXPECT_EQ(lines[11], "2; 0; 15");
+
+    // terza frattura
+    EXPECT_EQ(lines[12], "# FractureId; NumTraces");
+    EXPECT_EQ(lines[13], "2; 0");
+    EXPECT_EQ(lines[14], "# TraceId; Tips; Length");
+}
