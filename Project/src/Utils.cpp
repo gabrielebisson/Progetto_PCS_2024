@@ -22,43 +22,68 @@ std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,un
 }
 
 
+
+
 //funzione che trova il versore perpendicolare al piano che contiene il poligono
-// inline Vector3d versore_normale(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono)
-// {
-//     Vector3d versore(NAN,NAN,NAN);
-//     for(unsigned int i=1;i<poligono.size()-1;i++)
-//     {
-//         versore+=1./(poligono.size()-2)*(disc_frac_net.vertici[poligono[i]]-disc_frac_net.vertici[poligono[0]]).cross(disc_frac_net.vertici[poligono[i+1]]-disc_frac_net.vertici[poligono[0]]);
-//     }
-//     versore.normalize();
-//     return versore;
-// }
+inline Vector3d versore_normale(const std::vector<Vector3d>& poligono)
+{
+    Vector3d versore(0.,0.,0.);
+    for(unsigned int i=1;i<poligono.size()-1;i++)
+    {
+        versore+=1./(poligono.size()-2)*(poligono[i]-poligono[0]).cross(poligono[i+1]-poligono[0]);
+    }
+    versore.normalize();
+    return versore;
+}
+//funzione che trova il versore perpendicolare al piano che contiene il poligono, pos=posizione nel vettore DFN.vertici della frattura
+inline Vector3d versore_normale_2(const DFN& disc_frac_net,const std::vector<unsigned int>& poligono,const unsigned int& pos)
+{
+    Vector3d versore(0.,0.,0.);
+    for(unsigned int i=1;i<poligono.size()-1;i++)
+    {
+        versore+=1./(poligono.size()-2)*(disc_frac_net.vertici[pos][poligono[i]]-disc_frac_net.vertici[pos][poligono[0]]).cross(disc_frac_net.vertici[pos][poligono[i+1]]-disc_frac_net.vertici[pos][poligono[0]]);
+    }
+    versore.normalize();
+    return versore;
+}
 
 
 
 
-//funzione che trova se un punto è interno
-// bool interno_poligono(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono,const Vector3d& x, const double& tol)
-// {
-//     for(unsigned int i=0;i<poligono.size();i++)
-//     {
-
-//     }
-// }
+//funzione che trova se un punto è interno o sul bordo del poligono
+std::array<bool,2> interno_bordo_poligono(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono,const Vector3d& x,const unsigned int& pos_frattura, const double& tol)
+{
+    Vector3d n=versore_normale_2(disc_frac_net,poligono,pos_frattura);
+    double indicatore=((x-disc_frac_net.vertici[pos_frattura][poligono[poligono.size()-1]]).cross(disc_frac_net.vertici[pos_frattura][poligono[0]]-disc_frac_net.vertici[pos_frattura][poligono[poligono.size()-1]])).dot(n);
+    bool interno=(indicatore >-tol);
+    bool bordo=false;
+    unsigned int i=0;
+    while(interno && i<poligono.size())
+    {
+        indicatore=((x-disc_frac_net.vertici[pos_frattura][poligono[i]]).cross(disc_frac_net.vertici[pos_frattura][poligono[i+1]]-disc_frac_net.vertici[pos_frattura][poligono[i]])).dot(n);
+        if(!(abs(indicatore)>tol))
+        {
+            bordo=true;
+        }
+    }
+    std::array<bool,2> risultato={interno,bordo};
+    return risultato;
+}
 
 
 
 
 //funzione che scarta le fratture che sicuramente non si intersecano, l'output è un vettore di indici degli indici di DFN.idfratture che non sono stati scartati, quindi su cui bisogna controllare manualmente se si intersechino
-std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net)
+std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net,const std::vector<Vector3d>& versori_normali,const double& tol)
 {
-    std::vector<std::array<unsigned int,2>> indici_validi; //vettore finale di output con gli indici che non hanno passato il test
-    //ATTENZIONE ALL'OVERFLOW NEL PROSSIMO PASSAGGIO, PROBABILMENTE E' DA CAMBIARE
-    indici_validi.reserve(disc_frac_net.numFratture*(disc_frac_net.numFratture-1)/2); //al massimo ho n su 2 coppie
-    std::vector<std::tuple<unsigned int,Vector3d,double>> info_baricentro; //vettore con tutte le info da confrontare per effettuare il test
+    std::vector<std::array<unsigned int,2>> indici_validi; //vettore finale di output con gli indici che non hanno passato i test
+
+    //NOTA IMPORTANTE: si potrebbe più facilmente riservare al vettore indici_validi (numFratture su 2) posti, tuttavia se numFratture è troppo alto, potrei andare in overflow e avere un comportamento indefinito
+    std::list<std::array<unsigned int,2>> temp; //lista temporanea che contiene le coppie di indici che poi vanno in indici_validi
+    std::vector<std::tuple<unsigned int,Vector3d,double>> info_baricentro; //vettore con tutte le info da confrontare per effettuare i test
     info_baricentro.reserve(disc_frac_net.numFratture);
 
-    for(unsigned int i=0;i<disc_frac_net.numFratture;i++) // in questo ciclo salvo le info per il confronto
+    for(unsigned int i=0;i<disc_frac_net.numFratture;i++)
     {
         //trovo il baricentro della frattura
         Vector3d baricentro(0,0,0);
@@ -79,17 +104,50 @@ std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net)
         info_baricentro.push_back(tupla);
     }
 
-    //test effettivo per scartare le fratture che sicuramente non si intersecano
-    for(unsigned int i=0;i<disc_frac_net.numFratture-1;i++) //con questi 2 cicli for prendo tutte le combinazioni di 2 elementi delle fratture per il confronto, senza ripetizioni
+    //i test effettivi
+    //ciclo su tutte le coppie possibili di fratture
+    for(unsigned int i=0;i<disc_frac_net.numFratture-1;i++)
     {
         for(unsigned int j=i+1;j<disc_frac_net.numFratture;j++)
         {
-            std::array<unsigned int,2> coppia={i,j};
+            //test 1: vedo se le sfere che circoscrivono il poligono si intersecano...
             if((std::get<Vector3d>(info_baricentro[i])-std::get<Vector3d>(info_baricentro[j])).squaredNorm()<std::get<double>(info_baricentro[i])+std::get<double>(info_baricentro[j]))
             {
-                indici_validi.push_back(coppia);
+                //...se si intersecano, vedo se riesco a trovare una retta dove applicare il SAT
+                double val_min=INFINITY;
+                double val_max=-INFINITY;
+                for(auto& vertice:disc_frac_net.vertici[i])
+                {
+                    double proiezione=(vertice-std::get<Vector3d>(info_baricentro[j])).dot(versori_normali[j]);
+                    val_min=std::min(val_min,proiezione);
+                    val_max=std::max(val_max,proiezione);
+                }
+                // se non vale l'ipotesi del SAT per il primo asse, provo il secondo asse
+                if(!(val_min > -tol || val_max < tol))
+                {
+                    val_min=INFINITY;
+                    val_max=-INFINITY;
+                    for(auto& vertice:disc_frac_net.vertici[j])
+                    {
+                        double proiezione=(vertice-std::get<Vector3d>(info_baricentro[i])).dot(versori_normali[i]);
+                        val_min=std::min(val_min,proiezione);
+                        val_max=std::max(val_max,proiezione);
+                    }
+                    //se non vale l'ipotesi del SAT neanche per il secondo asse, allora c'è una possibile intersezione tra le 2 fratture
+                    if(!(val_min > -tol || val_max < tol))
+                    {
+                        std::array<unsigned int,2> coppia={i,j};
+                        temp.push_back(coppia);
+                    }
+                }
             }
         }
+    }
+    //sposto tutte le coppie dalla lista al vettore
+    indici_validi.reserve(temp.size());
+    for(auto& coppia:temp)
+    {
+        indici_validi.push_back(coppia);
     }
     return indici_validi;
 }
@@ -98,16 +156,12 @@ std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net)
 
 
 //funzione che genera la matrice di rotazione che trasforma il piano in cui la frattura è contenuta nel piano xy, in modo che il primo lato sia parallelo all'asse x (è una scelta, se ne poteva fare anche un'altra)
-Eigen::Matrix<double,3,3> allinea_xy(const std::vector<Eigen::Vector3d>& vertici)
+inline Matrix<double,3,3> allinea_xy(const std::vector<Vector3d>& vertici, Vector3d normale)
 {
-    Eigen::Matrix<double,3,3> rotazione;
-    Eigen::Vector3d n=(vertici[0]-vertici[1]).cross(vertici[2]-vertici[1]); //forse è un po' grossolana come stima del versore normale, tuttavia serve solamente per rendere più facile verificare una condizione e ridurre il costo computazionale
-    n=1./n.norm()*n;
-    rotazione.row(2)=n;
-    Eigen::Vector3d v=vertici[0]-vertici[1];
-    v=1/v.norm()*v;
+    Matrix<double,3,3> rotazione;
+    Vector3d v=(vertici[0]-vertici[1]).normalized();
     rotazione.row(0)=v;
-    rotazione.row(1)=n.cross(v);
+    rotazione.row(1)=normale.cross(v);
     return rotazione;
 }
 
@@ -122,7 +176,14 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
     //--------- passo 1 ---------
     //scrematura grossolana delle fratture che sicuramente non si intersecano
-    std::vector<std::array<unsigned int,2>> fratture_suscettibili=scarta_fratture(disc_frac_net);
+    std::vector<Vector3d> versori_normali;
+    versori_normali.reserve(disc_frac_net.numFratture);
+    for(auto& poligono:disc_frac_net.vertici)
+    {
+        Vector3d norm=versore_normale(poligono);
+        versori_normali.push_back(norm);
+    }
+    std::vector<std::array<unsigned int,2>> fratture_suscettibili=scarta_fratture(disc_frac_net,versori_normali,tol);
 
     //--------- passo 2 ---------
     //riservo spazio per memorizzare i dati sulle varie strutture dati
@@ -139,20 +200,15 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
     {
         //--------- output di ogni intersezione ---------
         std::array<unsigned int,2> tip={0,0};
-        std::array<Eigen::Vector3d,2> est_tra={Eigen::Vector3d(NAN,NAN,NAN),Eigen::Vector3d(NAN,NAN,NAN)};
+        std::array<Vector3d,2> est_tra={Vector3d(NAN,NAN,NAN),Vector3d(NAN,NAN,NAN)};
         unsigned int pos=0; //è l'indice di riempimento di est_tra, ossia indica la posizione libera di est_tra (se pos==2 vuol dire che è pieno)
 
         //--------- passo 4 ---------
         //ruoto i poligoni sul piano xy per rendere più facili i confronti dopo
-        Eigen::Matrix<double,3,3> mat_rot=allinea_xy(disc_frac_net.vertici[coppia[0]]);
-        //std::vector<Eigen::Vector3d> vertici_ruotati_1={Eigen::Vector3d(0.,0.,0.)}; //prima frattura
-        std::vector<Eigen::Vector3d> vertici_ruotati_2={}; //seconda frattura
+        Matrix<double,3,3> mat_rot=allinea_xy(disc_frac_net.vertici[coppia[0]],versori_normali[coppia[0]]);
+        std::vector<Vector3d> vertici_ruotati_2={}; //seconda frattura
         vertici_ruotati_2.resize(disc_frac_net.numVertici[coppia[1]]);
 
-        // for(unsigned int i=1;i<disc_frac_net.numVertici[coppia[0]];i++)
-        // {
-        //     vertici_ruotati_1[i]=mat_rot*(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[0]][0]);
-        // }
         for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[1]];i++)
         {
             vertici_ruotati_2[i]=mat_rot*(disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[0]][0]);
@@ -173,20 +229,18 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
                 //ciclo su tutti i triangoli della prima frattura nella coppia
                 for(auto& triangolo:triangolazione)
                 {
-                    //std::cout << "nuovo triangolo analizzato"<<std::endl;
-                    Eigen::Matrix<double,3,3> mat_coeff;
-                    Eigen::Vector3d b=disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[0]][triangolo[0]]; //vettore dei termini noti
+                    Matrix<double,3,3> mat_coeff;
+                    Vector3d b=disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[0]][triangolo[0]]; //vettore dei termini noti
                     mat_coeff.col(0)=disc_frac_net.vertici[coppia[0]][triangolo[1]]-disc_frac_net.vertici[coppia[0]][triangolo[0]];
                     mat_coeff.col(1)=disc_frac_net.vertici[coppia[0]][triangolo[2]]-disc_frac_net.vertici[coppia[0]][triangolo[0]];
                     mat_coeff.col(2)=disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[1]][(i+1)%disc_frac_net.numVertici[coppia[1]]];
-                    Eigen::Vector3d x=mat_coeff.lu().solve(b);
-                    //std::cout << x<<std::endl;
+                    Vector3d x=mat_coeff.lu().solve(b);
 
                     //--------- passo 8 ---------
                     //controllo se la soluzione trovata appartiene al triangolo
                     if(x(0)>=-tol && x(1)>=-tol && x(0)+x(1)<=1.+tol && x(2)<=1.+tol && x(2)>=-tol) //l'ultimo controllo non dovrebbe servire ma per ora lo tengo
                     {
-                        Eigen::Vector3d y=0.5*(disc_frac_net.vertici[coppia[1]][i]+x(2)*(-mat_coeff.col(2))+disc_frac_net.vertici[coppia[0]][triangolo[0]]+x(0)*mat_coeff.col(0)+x(1)*mat_coeff.col(1));
+                        Vector3d y=0.5*(disc_frac_net.vertici[coppia[1]][i]+x(2)*(-mat_coeff.col(2))+disc_frac_net.vertici[coppia[0]][triangolo[0]]+x(0)*mat_coeff.col(0)+x(1)*mat_coeff.col(1));
                         est_tra[pos]=y;
                         tip[1]+=1;
 
@@ -222,13 +276,9 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         if(pos!=2)
         {
             //non ricommento tutto in quanto è molto simile a prima (però non è proprio uguale identico, ci sono alcuni passaggi che qua non servono più)
-            mat_rot=allinea_xy(disc_frac_net.vertici[coppia[1]]);
-            std::vector<Eigen::Vector3d> vertici_ruotati_1;
+            mat_rot=allinea_xy(disc_frac_net.vertici[coppia[1]],versori_normali[coppia[0]]);
+            std::vector<Vector3d> vertici_ruotati_1;
             vertici_ruotati_1.resize(disc_frac_net.numVertici[coppia[0]]);
-            // for(unsigned int i=1;i<disc_frac_net.numVertici[coppia[1]];i++)
-            // {
-            //     vertici_ruotati_2[i]=mat_rot*(disc_frac_net.vertici[coppia[1]][i]-disc_frac_net.vertici[coppia[1]][0]);
-            // }
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
                 vertici_ruotati_1[i]=mat_rot*(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[1]][0]);
@@ -238,22 +288,19 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
-                //std::cout << i <<std::endl;
                 if(!(vertici_ruotati_1[i](2)*vertici_ruotati_1[(i+1)%disc_frac_net.numVertici[coppia[0]]](2)>tol))
                 {
                     for(auto& triangolo:triangolazione)
                     {
-                        //std::cout << "nuovo triangolo analizzato"<<std::endl;
-                        Eigen::Matrix<double,3,3> mat_coeff;
-                        Eigen::Vector3d b=disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[1]][triangolo[0]];
+                        Matrix<double,3,3> mat_coeff;
+                        Vector3d b=disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[1]][triangolo[0]];
                         mat_coeff.col(0)=disc_frac_net.vertici[coppia[1]][triangolo[1]]-disc_frac_net.vertici[coppia[1]][triangolo[0]];
                         mat_coeff.col(1)=disc_frac_net.vertici[coppia[1]][triangolo[2]]-disc_frac_net.vertici[coppia[1]][triangolo[0]];
                         mat_coeff.col(2)=disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[0]][(i+1)%disc_frac_net.numVertici[coppia[0]]];
-                        Eigen::Vector3d x=mat_coeff.lu().solve(b);
-                        //std::cout << x<<std::endl;
+                        Vector3d x=mat_coeff.lu().solve(b);
                         if(x(0)>=-tol && x(1)>=-tol && x(0)+x(1)<=1.+tol && x(2)<=1.+tol && x(2)>=-tol)
                         {
-                            Eigen::Vector3d y=0.5*(disc_frac_net.vertici[coppia[0]][i]+x(2)*(-mat_coeff.col(2))+disc_frac_net.vertici[coppia[1]][triangolo[0]]+x(0)*mat_coeff.col(0)+x(1)*mat_coeff.col(1));
+                            Vector3d y=0.5*(disc_frac_net.vertici[coppia[0]][i]+x(2)*(-mat_coeff.col(2))+disc_frac_net.vertici[coppia[1]][triangolo[0]]+x(0)*mat_coeff.col(0)+x(1)*mat_coeff.col(1));
                             est_tra[pos]=y;
                             tip[0]+=1;
                             if(pos!=0)
@@ -287,7 +334,7 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
             disc_frac_net.idTracce.push_back(idt);
             std::cout << "TRACCIA "<<idt<<":"<<std::endl;
             std::array<unsigned int,2> coppia2={disc_frac_net.idFratture[coppia[0]],disc_frac_net.idFratture[coppia[1]]};
-            disc_frac_net.tracce.push_back(coppia);
+            disc_frac_net.tracce.push_back(coppia2);
             std::cout << "la traccia e' stata generata dalle fratture "<<coppia2[0]<<" e "<<coppia2[1]<<std::endl;
             disc_frac_net.estremiTracce.push_back(est_tra);
             std::cout << "gli estremi della traccia sono "<<std::endl<<est_tra[0] <<std::endl<<"e"<<std::endl<<est_tra[1]<<std::endl;
@@ -300,11 +347,14 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
             std::cout << "-----------------------------------------------------"<<std::endl;
             idt++;
         }
-        //std::cout<<"++++++++++++++++++++++++"<<std::endl;
     }
     disc_frac_net.numTracce=idt;
     std::cout << "Alla fine sono state trovate "<<idt<<" tracce"<<std::endl;
 }
+
+
+
+
 //=====================================================================================================
 
 
@@ -326,4 +376,42 @@ std::tuple<Vector3d,bool> interseca_segmenti(const Vector3d& A1,const Vector3d& 
     bool interno=(alfa<1+tol && alfa>-tol && beta<1+tol && beta>-tol);
     return std::make_tuple(x,interno);
 }
+
+
+
+
+//funzione che divide il poligono in 2 sottopoligoni in base al segmento tagliante
+// void taglia_poligono(MeshDiSupporto& MDS ,const unsigned int& id,const Eigen::Vector3d& est1,const Eigen::Vector3d& est2)
+// {
+
+// }
+
+
+
+
+//procedura che crea le mesh sulle fratture a partire dalle tracce
+// void crea_mesh(DFN& disc_frac_net, double tol)
+// {
+//     for(unsigned int id=0;id<disc_frac_net.numFratture;id++)
+//     {
+//         //salvo le informazioni che so sulla mesh
+//         PolygonalMesh mesh;
+//         for(unsigned int i=0;i<disc_frac_net.numVertici[id];i++)
+//         {
+//             mesh.Cell0DId.push_back(i);
+//             mesh.Cell0DCoordinates.push_back(disc_frac_net.vertici[id][i]);
+//             mesh.Cell0DMarkers.insert({i,{i}}); //marker=i, id_cella0D=i
+//             mesh.NumberCell0D+=disc_frac_net.numVertici[id];
+//         }
+//         MeshDiSupporto MDS;
+//         for(auto& traPas:disc_frac_net.traccePassanti[id])
+//         {
+
+//         }
+//         for(auto& traNoPas:disc_frac_net.tracceNonPassanti[id])
+//         {
+
+//         }
+//     }
+// }
 }
