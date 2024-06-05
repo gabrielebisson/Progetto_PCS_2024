@@ -4,9 +4,10 @@
 #include <fstream>
 #include "StructDFN.hpp"
 #include "Utils.hpp"
+#include <Eigen/Eigen>
 
 // Test per la lettura del DFN da un file
-TEST(ReadDFNFromFileTest, ValidInputFile) {
+TEST(ReadDFNFromFileTest, FileInput) {
     LibraryDFN::DFN dfn;
 
     // Chiamare la funzione per leggere il DFN dal file
@@ -48,7 +49,7 @@ TEST(ReadDFNFromFileTest, ValidInputFile) {
 }
 
 // Test per la funzione printTraces
-TEST(PrintTracesTest, ValidOutput) {
+TEST(PrintTracesTest, FileOutput) {
     LibraryDFN::DFN dfn;
 
     // Dati di test
@@ -60,10 +61,10 @@ TEST(PrintTracesTest, ValidOutput) {
         {{Eigen::Vector3d(1.0, 1.0, 1.0), Eigen::Vector3d(2.0, 2.0, 2.0)}}
     };
 
-    std::string tempFilename = "temp_output.txt"; // file temporaneo
-    printTraces(dfn, tempFilename);
+    std::string tempFile = "temp_output.txt"; // file temporaneo
+    printTraces(dfn, tempFile);
 
-    std::ifstream inFile(tempFilename); // leggo file
+    std::ifstream inFile(tempFile); // leggo file
     ASSERT_TRUE(inFile.is_open());
 
     std::string line;
@@ -73,7 +74,7 @@ TEST(PrintTracesTest, ValidOutput) {
     }
     inFile.close();
 
-    std::remove(tempFilename.c_str());
+    std::remove(tempFile.c_str());
 
     // Verifico output atteso
     ASSERT_EQ(lines.size(), 5);
@@ -83,7 +84,7 @@ TEST(PrintTracesTest, ValidOutput) {
     EXPECT_EQ(lines[3], "0; 0; 1; 0; 0; 0; 1; 1; 1");
     EXPECT_EQ(lines[4], "1; 1; 2; 1; 1; 1; 2; 2; 2");
 }
-TEST(PrintTracesByFractureTest, ValidOutput) {
+TEST(PrintTracesByFractureTest, Output) {
     LibraryDFN::DFN dfn;
 
     // Dati di test
@@ -95,10 +96,10 @@ TEST(PrintTracesByFractureTest, ValidOutput) {
     dfn.tips = {{false, true}, {true, false}, {false, false}};
     dfn.lunghezze = {10.0, 20.0, 15.0};
 
-    std::string tempFilename = "temp_fracture_output.txt";
-    printTracesByFracture(dfn, tempFilename);
+    std::string tempFile = "temp_fracture_output.txt";
+    printTracesByFracture(dfn, tempFile);
 
-    std::ifstream inFile(tempFilename);
+    std::ifstream inFile(tempFile);
     ASSERT_TRUE(inFile.is_open());
 
     std::string line;
@@ -108,7 +109,7 @@ TEST(PrintTracesByFractureTest, ValidOutput) {
     }
     inFile.close();
 
-    std::remove(tempFilename.c_str());
+    std::remove(tempFile.c_str());
 
     ASSERT_EQ(lines.size(), 15);
 
@@ -132,4 +133,86 @@ TEST(PrintTracesByFractureTest, ValidOutput) {
     EXPECT_EQ(lines[12], "# FractureId; NumTraces");
     EXPECT_EQ(lines[13], "2; 0");
     EXPECT_EQ(lines[14], "# TraceId; Tips; Length");
+}
+
+// Test per funzione che triangola la frattura
+TEST(TriangolaFratturaTest, Frattura) {
+    LibraryDFN::DFN dfn;
+    dfn.numVertici = {5};  // 1 frattura con 5 vertici
+
+    std::vector<std::array<unsigned int, 3>> expected = {{0, 1, 2}, {0, 2, 3}, {0, 3, 4}};
+    auto result = triangola_frattura(dfn, 0);
+    EXPECT_EQ(result, expected);
+}
+
+// Test per funzione che trova il versore perpendicolare al piano che contiene il poligono
+TEST(VersoreNormaleTest, Poligono) {
+    std::vector<Eigen::Vector3d> poligono = {
+        Eigen::Vector3d(0, 0, 0),
+        Eigen::Vector3d(1, 0, 0),
+        Eigen::Vector3d(1, 1, 0),
+        Eigen::Vector3d(0, 1, 0)
+    };
+
+    Eigen::Vector3d expected_normal(0, 0, 1);
+    Eigen::Vector3d normal = LibraryDFN::versore_normale(poligono);
+
+    EXPECT_NEAR(normal[0], expected_normal[0], 1e-6);
+    EXPECT_NEAR(normal[1], expected_normal[1], 1e-6);
+    EXPECT_NEAR(normal[2], expected_normal[2], 1e-6);
+}
+
+
+// Test funzione scarta fratture
+// Test per il caso in cui le fratture non si intersecano
+TEST(ScartaFrattureTest, NoIntersection) {
+    LibraryDFN::DFN dfn;
+    dfn.numFratture = 2;
+    dfn.vertici = {
+        {Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(1, 0, 0), Eigen::Vector3d(1, 1, 0), Eigen::Vector3d(0, 1, 0)},
+        {Eigen::Vector3d(2, 2, 0), Eigen::Vector3d(3, 2, 0), Eigen::Vector3d(3, 3, 0), Eigen::Vector3d(2, 3, 0)}
+    };
+    dfn.numVertici = {4, 4};
+
+    std::vector<Eigen::Vector3d> versori_normali = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1)};
+    double tol = 0.1;
+
+    auto result = scarta_fratture(dfn, versori_normali, tol);
+    EXPECT_TRUE(result.empty());
+}
+
+// Test per il caso in cui le fratture si intersecano
+TEST(ScartaFrattureTest, Intersection) {
+    LibraryDFN::DFN dfn;
+    dfn.numFratture = 2;
+    dfn.vertici = {
+        {Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(2, 0, 0), Eigen::Vector3d(2, 2, 0), Eigen::Vector3d(0, 2, 0)},
+        {Eigen::Vector3d(1, 1, -1), Eigen::Vector3d(3, 1, -1), Eigen::Vector3d(3, 1, 1), Eigen::Vector3d(1, 1, 1)}
+    };
+    dfn.numVertici = {4, 4};
+
+    std::vector<Eigen::Vector3d> versori_normali = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 1, 0)};
+    double tol = 0.1;
+
+    auto result = scarta_fratture(dfn, versori_normali, tol);
+
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0][0], 0);
+    EXPECT_EQ(result[0][1], 1);
+}
+// Test per il caso in cui le fratture si toccano ma non si intersecano
+TEST(ScartaFrattureTest, Touching) {
+    LibraryDFN::DFN dfn;
+    dfn.numFratture = 2;
+    dfn.vertici = {
+        {Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(1, 0, 0), Eigen::Vector3d(1, 1, 0), Eigen::Vector3d(0, 1, 0)},
+        {Eigen::Vector3d(1, 0, 0), Eigen::Vector3d(2, 0, 0), Eigen::Vector3d(2, 1, 0), Eigen::Vector3d(1, 1, 0)}
+    };
+    dfn.numVertici = {4, 4};
+
+    std::vector<Eigen::Vector3d> versori_normali = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1)};
+    double tol = 0.1;
+
+    auto result = scarta_fratture(dfn, versori_normali, tol);
+    EXPECT_TRUE(result.empty());
 }
