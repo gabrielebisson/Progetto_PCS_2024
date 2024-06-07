@@ -5,6 +5,9 @@
 #include "StructDFN.hpp"
 #include "Utils.hpp"
 #include <Eigen/Eigen>
+#include <vector>
+#include <array>
+#include <tuple>
 
 // Test per la lettura del DFN da un file
 TEST(ReadDFNFromFileTest, FileInput) {
@@ -215,4 +218,102 @@ TEST(ScartaFrattureTest, Touching) {
 
     auto result = scarta_fratture(dfn, versori_normali, tol);
     EXPECT_TRUE(result.empty());
+}
+
+// Test per funzione che memorizza le tracce
+TEST(MemorizzaTracceTest, DFN) {
+    LibraryDFN::DFN dfn;
+
+    // Definizione delle fratture e dei vertici
+    dfn.numFratture = 3;
+    dfn.idFratture = {0, 1, 2};
+    dfn.numVertici = {4, 4, 4};
+    dfn.vertici = {
+        {
+            Eigen::Vector3d(0.0, 0.0, 0.0),
+            Eigen::Vector3d(1.0, 0.0, 0.0),
+            Eigen::Vector3d(1.0, 1.0, 0.0),
+            Eigen::Vector3d(0.0, 1.0, 0.0)
+        },
+        {
+            Eigen::Vector3d(0.8, 0.0, -0.1),
+            Eigen::Vector3d(0.8, 0.0, 0.29999999999999999),
+            Eigen::Vector3d(0.8, 1.0, 0.29999999999999999),
+            Eigen::Vector3d(0.8, 1.0, -0.1)
+        },
+        {
+            Eigen::Vector3d(-0.23777799999999999, 0.5, -0.34444000000000002),
+            Eigen::Vector3d(0.31618370000000001, 0.5, -0.34444000000000002),
+            Eigen::Vector3d(0.31618370000000001, 0.5, 0.45283889999999999),
+            Eigen::Vector3d(-0.23777799999999999, 0.5, 0.45283889999999999)
+        }
+    };
+
+    // Chiamata alla funzione da testare
+    memorizza_tracce(dfn, 1e-6);
+
+    // Asserzioni per verificare i risultati
+
+    // Prima frattura
+    EXPECT_EQ(dfn.idFratture[0], 0);
+    EXPECT_EQ(dfn.numVertici[0], 4);
+    ASSERT_EQ(dfn.vertici[0].size(), 4);
+    EXPECT_EQ(dfn.vertici[0][0], Eigen::Vector3d(0.0, 0.0, 0.0));
+    EXPECT_EQ(dfn.vertici[0][1], Eigen::Vector3d(1.0, 0.0, 0.0));
+    EXPECT_EQ(dfn.vertici[0][2], Eigen::Vector3d(1.0, 1.0, 0.0));
+    EXPECT_EQ(dfn.vertici[0][3], Eigen::Vector3d(0.0, 1.0, 0.0));
+
+    // Seconda frattura
+    EXPECT_EQ(dfn.idFratture[1], 1);
+    EXPECT_EQ(dfn.numVertici[1], 4);
+    ASSERT_EQ(dfn.vertici[1].size(), 4);
+    EXPECT_EQ(dfn.vertici[1][0], Eigen::Vector3d(0.8, 0.0, -0.1));
+    EXPECT_EQ(dfn.vertici[1][1], Eigen::Vector3d(0.8, 0.0, 0.29999999999999999));
+    EXPECT_EQ(dfn.vertici[1][2], Eigen::Vector3d(0.8, 1.0, 0.29999999999999999));
+    EXPECT_EQ(dfn.vertici[1][3], Eigen::Vector3d(0.8, 1.0, -0.1));
+
+    // Terza frattura
+    EXPECT_EQ(dfn.idFratture[2], 2);
+    EXPECT_EQ(dfn.numVertici[2], 4);
+    ASSERT_EQ(dfn.vertici[2].size(), 4);
+    EXPECT_EQ(dfn.vertici[2][0], Eigen::Vector3d(-0.23777799999999999, 0.5, -0.34444000000000002));
+    EXPECT_EQ(dfn.vertici[2][1], Eigen::Vector3d(0.31618370000000001, 0.5, -0.34444000000000002));
+    EXPECT_EQ(dfn.vertici[2][2], Eigen::Vector3d(0.31618370000000001, 0.5, 0.45283889999999999));
+    EXPECT_EQ(dfn.vertici[2][3], Eigen::Vector3d(-0.23777799999999999, 0.5, 0.45283889999999999));
+}
+
+// Test per la funzione che trova l'intersezione tra 2 segmenti
+TEST(IntersecaSegmentiTest, Intersection) {
+
+    // Definizione dei punti dei segmenti A e B
+    Eigen::Vector3d A1(0, 0, 0);
+    Eigen::Vector3d A2(1, 1, 1);
+    Eigen::Vector3d B1(0, 1, 0);
+    Eigen::Vector3d B2(1, 0, 1);
+    double tol = 1e-6;
+
+    // Chiamata della funzione per verificare l'intersezione
+    auto [point, interno] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2, tol);
+
+    // Verifica che i segmenti si intersecano e che il punto di intersezione è corretto
+    EXPECT_TRUE(interno);
+    EXPECT_NEAR(point.x(), 0.5, tol);
+    EXPECT_NEAR(point.y(), 0.5, tol);
+    EXPECT_NEAR(point.z(), 0.5, tol);
+}
+
+TEST(IntersecaSegmentiTest, NoIntersection) {
+
+    // Definizione dei punti dei segmenti A e B
+    Eigen::Vector3d A1(0, 0, 0);
+    Eigen::Vector3d A2(1, 1, 1);
+    Eigen::Vector3d B1(2, 2, 2);
+    Eigen::Vector3d B2(3, 3, 3);
+    double tol = 1e-6;
+
+    // Chiamata della funzione per verificare l'intersezione
+    auto [point, interno] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2, tol);
+
+    // Verifica che i segmenti non si intersecano
+    EXPECT_FALSE(interno);
 }
