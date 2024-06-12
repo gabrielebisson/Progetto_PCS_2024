@@ -9,12 +9,12 @@ using namespace PolygonalLibrary;
 namespace LibraryDFN{
 
 struct DFN {
-
     //fratture
     unsigned int numFratture; //numero delle fratture
     std::vector<unsigned int> idFratture; //vettore degli id delle fratture
     std::vector<unsigned int> numVertici; //vettore di numeri di vertici di ogni frattura (ordinati nel modo numVertici[i]= numero vertici della frattura idFratture[i]) (se non mi sbaglio serve a qualcosa, in lettura, non in scrittura)
     std::vector<std::vector<Eigen::Vector3d>> vertici; //vettore di matrici di dimensione 3x(numero vertici), ogni colonna individua le coordinate x, y, z del punto (ordinati nel modo vertici[i]= insieme delle coordinate dei vertici della frattura idFratture[i] in senso antiorario)
+    std::vector<Eigen::Vector3d> versori; //vettore con tutti i versori normali alle fratture
 
     //tracce
     unsigned int numTracce; //numero delle tracce
