@@ -1,8 +1,6 @@
 #include "Utils.hpp"
-#include "readFileTest.hpp"
 #include <iostream>
 #include <fstream>
-#include "readFileTest.hpp"
 #include "StructDFN.hpp"
 #include "Eigen/Eigen"
 
@@ -12,6 +10,10 @@ using namespace Eigen;
 int main()
 {
     double tol=__DBL_EPSILON__;
+    // DFN prova;
+    // std::string nome_file="DFN/FR3_data.txt";
+    // readDFNFromFile(nome_file,prova);
+    // memorizza_tracce(prova,tol);
     DFN dfn;
     dfn.numFratture=2;
     dfn.idFratture={0,1};
@@ -53,6 +55,7 @@ int main()
     dfn.traccePassanti={{0,1,2},{7}};
     dfn.tracceNonPassanti={{3,4,5,6},{8,9,10,11,12,13}};
     definisci_mesh(dfn,tol);
+
     // PolygonalMesh mesh;
     // mesh.NumberCell2D=5;
     // mesh.Cell2DVertices={{0,4,8,9,5,1},{2,5,9,7},{7,10,11,6,3},{9,11,10},{9,8,6}};
