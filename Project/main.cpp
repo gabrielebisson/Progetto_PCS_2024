@@ -13,29 +13,45 @@ int main()
 {
     double tol=__DBL_EPSILON__;
     DFN dfn;
-    dfn.numFratture=1;
-    dfn.idFratture={0};
-    dfn.numVertici={{7}};
-    dfn.vertici={{Vector3d(5.,2,0.)
+    dfn.numFratture=2;
+    dfn.idFratture={0,1};
+    dfn.numVertici={{7},{7}};
+    dfn.vertici={{Vector3d(5.,2.,0.)
                    ,Vector3d(11.,0.,0.)
                    ,Vector3d(20.,0.,0.)
                    ,Vector3d(22.,8.,0.)
                    ,Vector3d(14.,16.,0.)
                    ,Vector3d(2.,13.,0.)
-                    ,Vector3d(0.,7.,0.)}};
-    dfn.versori={Vector3d(0.,0.,1.)};
+                   ,Vector3d(0.,7.,0.)},
+                 {Vector3d(-19.,0,0.)
+                   ,Vector3d(-7.,0.,0.)
+                   ,Vector3d(-5.,3.,0.)
+                   ,Vector3d(-7.,6.,0.)
+                   ,Vector3d(-10.,10.,0.)
+                   ,Vector3d(-13.,11.,0.)
+                   ,Vector3d(-19.,8.,0.)}
+                 };
+    dfn.versori={Vector3d(0.,0.,1.),Vector3d(0.,0.,1.)};
 
-    dfn.idTracce={0,1,2,3,4,5,6};
+    dfn.idTracce={0,1,2,3,4,5,6,7,8,9,10,11,12,13};
     dfn.estremiTracce={{Vector3d(1.,10.,0.),Vector3d(17.,13.,0.)}
                       ,{Vector3d(6.,14.,0.),Vector3d(8.,1.,0.)}
                       ,{Vector3d(19.,11.,0.),Vector3d(19.,0.,0.)}
                       ,{Vector3d(10.,13.,0.),Vector3d(6.,6.,0.)}
                       ,{Vector3d(15.,9.,0.),Vector3d(19.,11.,0.)}
                       ,{Vector3d(15.,6.,0.),Vector3d(19.,5.,0.)}
-                      ,{Vector3d(11.,7.,0.),Vector3d(12.,5.,0.)}};
+                      ,{Vector3d(11.,7.,0.),Vector3d(12.,5.,0.)}
 
-    dfn.traccePassanti={{0,1,2}};
-    dfn.tracceNonPassanti={{3,4,5,6}};
+                      ,{Vector3d(-13.,0.,0.),Vector3d(-13.,11.,0.)}
+                      ,{Vector3d(-18.,6.,0.),Vector3d(-10.,6.,0.)}
+                      ,{Vector3d(-11.,5.,0.),Vector3d(-10.,1.,0.)}
+                      ,{Vector3d(-13.,6.,0.),Vector3d(-15.,9.,0.)}
+                      ,{Vector3d(-17.,2.,0.),Vector3d(-15.,4.,0.)}
+                      ,{Vector3d(-11.5,8.,0.),Vector3d(-13.,6.,0.)}
+                      ,{Vector3d(-7.,2.,0.),Vector3d(-7.,3.,0.)}};
+
+    dfn.traccePassanti={{0,1,2},{7}};
+    dfn.tracceNonPassanti={{3,4,5,6},{8,9,10,11,12,13}};
     definisci_mesh(dfn,tol);
     // PolygonalMesh mesh;
     // mesh.NumberCell2D=5;

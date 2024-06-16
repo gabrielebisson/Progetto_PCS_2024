@@ -7,6 +7,7 @@
 #include <tuple>
 #include <cmath>
 #include <algorithm>
+#include <unordered_map>
 
 namespace LibraryDFN
 {
@@ -27,6 +28,7 @@ namespace LibraryDFN
     inline Eigen::Vector3d versore_normale_2(const DFN& disc_frac_net,const std::vector<unsigned int>& poligono,const unsigned int& pos);
     std::array<bool,2> interno_bordo_poligono(const DFN& disc_frac_net, const std::vector<unsigned int>& poligono,const Eigen::Vector3d& x,const unsigned int& pos_frattura, const double& tol);
     std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> contatto_poligoni_segmento(const DFN& disc_frac_net,const unsigned int& id,PolygonalMesh& mesh,const Eigen::Vector3d& est1,const Eigen::Vector3d& est2, const double& tol);
-    void aggiorna_mesh(PolygonalMesh& mesh, const std::vector<unsigned int>& poligoni, const std::vector<std::array<unsigned int, 2>> &lati_coinvolti, const Eigen::Vector3d& est1, const Eigen::Vector3d& est2, const double& tol);
+    std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,std::unordered_map<unsigned int, std::vector<unsigned int>>& mappa_vecchi_lati_nuovi_lati,const std::vector<unsigned int>& poligoni,const unsigned int& i,const unsigned int& vecchio_lato_partenza,const unsigned int& vecchio_lato_arrivo,const unsigned int& est_taglio_partenza,const unsigned int& est_taglio_arrivo,const unsigned int& ID_1D);
     void definisci_mesh(DFN& disc_frac_net, double tol);
+    void aggiorna_mesh(PolygonalMesh& mesh, const std::vector<unsigned int>& poligoni, const std::vector<std::array<unsigned int, 2>> &lati_coinvolti, const Eigen::Vector3d& est1, const Eigen::Vector3d& est2, const double& tol);
 }
