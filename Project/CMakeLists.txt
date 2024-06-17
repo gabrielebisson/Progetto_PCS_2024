@@ -15,6 +15,7 @@ if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
 endif (WIN32)
 
+
 # Add dependencies
 ################################################################################
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_SOURCE_DIR}/../externals/Main_Install/eigen3)
@@ -23,6 +24,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_SOURCE_DIR}/../extern
 ## Eigen3
 find_package(Eigen3 CONFIG REQUIRED)
 list(APPEND DFN_LINKED_LIBRARIES PUBLIC Eigen3::Eigen)
+
 
 ## Threads
 find_package(Threads REQUIRED)
@@ -44,13 +46,24 @@ list(APPEND "${CMAKE_NAME_PROJECT}_headers" ${src_headers})
 list(APPEND "${CMAKE_NAME_PROJECT}_includes" ${src_includes})
 list(APPEND "${CMAKE_NAME_PROJECT}_LINKED_LIBRARIES" ${src_includes})
 
+add_subdirectory(testgoogle)
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_sources" ${testgoogle_sources})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_headers" ${testgoogle_headers})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_includes" ${testgoogle_includes})
+list(APPEND "${CMAKE_NAME_PROJECT}_TEST_LINKED_LIBRARIES" ${testgoogle_includes})
+
 # Create executable
 ################################################################################
 
 add_executable(${CMAKE_PROJECT_NAME} main.cpp ${${CMAKE_NAME_PROJECT}_sources} ${${CMAKE_NAME_PROJECT}_headers})
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(${PROJECT_NAME} ${DFN_LINKED_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${${CMAKE_NAME_PROJECT}_includes})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
+
+add_executable(${CMAKE_PROJECT_NAME}_TEST runGtest.cpp ${${CMAKE_NAME_PROJECT}_sources} ${${CMAKE_NAME_PROJECT}_headers} ${${CMAKE_NAME_PROJECT}_TEST_sources} ${${CMAKE_NAME_PROJECT}_TEST_headers})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DFN DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(${CMAKE_PROJECT_NAME}_TEST ${DFN_LINKED_LIBRARIES} ${${CMAKE_NAME_PROJECT}_TEST_LINKED_LIBRARIES})
+target_include_directories(${CMAKE_PROJECT_NAME}_TEST PUBLIC ${${CMAKE_NAME_PROJECT}_includes} ${${CMAKE_NAME_PROJECT}_TEST_includes})
+target_compile_options(${PROJECT_NAME}_TEST PUBLIC -fPIC)

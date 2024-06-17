@@ -6,6 +6,7 @@
 #include <list>
 #include <tuple>
 #include <cmath>
+
 #include <algorithm>
 #include <map>
 
@@ -29,4 +30,5 @@ namespace LibraryDFN
     std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,std::map<unsigned int, std::vector<unsigned int>>& mappa_vecchi_lati_nuovi_lati,std::map<std::array<unsigned int,2>,unsigned int>& mappa_estremi_nuovi_lati_nuovi_lati,const std::vector<unsigned int>& poligoni,const unsigned int& i,const unsigned int& vecchio_lato_partenza,const unsigned int& vecchio_lato_arrivo,const unsigned int& est_taglio_partenza,const unsigned int& est_taglio_arrivo,const unsigned int& ID_1D);
     void definisci_mesh(DFN& disc_frac_net, double tol);
     void aggiorna_mesh(PolygonalMesh& mesh, const std::vector<unsigned int>& poligoni, const std::vector<std::array<unsigned int, 2>> &lati_coinvolti, const Eigen::Vector3d& est1, const Eigen::Vector3d& est2, const double& tol);
+
 }

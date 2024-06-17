@@ -42,7 +42,9 @@ inline Vector3d versore_normale(const std::vector<Vector3d>& poligono)
 
 
 //funzione che scarta le fratture che sicuramente non si intersecano, l'output è un vettore di indici degli indici di DFN.idfratture che non sono stati scartati, quindi su cui bisogna controllare manualmente se si intersechino
+
 std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net,const double& tol)
+
 {
     std::vector<std::array<unsigned int,2>> indici_validi; //vettore finale di output con gli indici che non hanno passato i test
 
@@ -86,7 +88,9 @@ std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net,const
                 double val_max=-INFINITY;
                 for(auto& vertice:disc_frac_net.vertici[i])
                 {
+
                     double proiezione=(vertice-std::get<Vector3d>(info_baricentro[j])).dot(disc_frac_net.versori[j]);
+
                     val_min=std::min(val_min,proiezione);
                     val_max=std::max(val_max,proiezione);
                 }
@@ -98,6 +102,7 @@ std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net,const
                     for(auto& vertice:disc_frac_net.vertici[j])
                     {
                         double proiezione=(vertice-std::get<Vector3d>(info_baricentro[i])).dot(disc_frac_net.versori[i]);
+
                         val_min=std::min(val_min,proiezione);
                         val_max=std::max(val_max,proiezione);
                     }
@@ -173,8 +178,10 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
         //--------- passo 4 ---------
         //ruoto i poligoni sul piano xy per rendere più facili i confronti dopo
+
         std::vector<double> zeta_ruotate_2={}; //seconda frattura
         zeta_ruotate_2.resize(disc_frac_net.numVertici[coppia[1]]);
+
 
         for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[1]];i++)
         {
@@ -243,8 +250,10 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         if(pos!=2)
         {
             //non ricommento tutto in quanto è molto simile a prima (però non è proprio uguale identico, ci sono alcuni passaggi che qua non servono più)
+
             std::vector<double> zeta_ruotate_1;
             zeta_ruotate_1.resize(disc_frac_net.numVertici[coppia[0]]);
+
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
                 zeta_ruotate_1[i]=disc_frac_net.versori[coppia[1]].dot(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[1]][0]);
@@ -254,7 +263,9 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
+
                 if(!(zeta_ruotate_1[i]*zeta_ruotate_1[(i+1)%disc_frac_net.numVertici[coppia[0]]]>tol))
+
                 {
                     for(auto& triangolo:triangolazione)
                     {
@@ -319,15 +330,15 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 }
 
 
-
-
 //***********************************************PARTE 2***********************************************
 
 
 
 
 //funzione che trova l'intersezione tra 2 segmenti, in verità trova il punto medio del segmento di lunghezza minima che collega i 2 segmenti, che, se i 2 segmenti sono complanari, coincide con il punto di intersezione
+
 std::tuple<Vector3d,double> interseca_segmenti(const Vector3d& A1,const Vector3d& A2,const Vector3d& B1,const Vector3d& B2)
+
 {
     Vector3d n=(A2-A1).normalized();
     Vector3d v=B2-B1;
@@ -339,6 +350,7 @@ std::tuple<Vector3d,double> interseca_segmenti(const Vector3d& A1,const Vector3d
     w=-w;
     double beta=(v.dot(w.dot(n)*n-w))/(v.squaredNorm()-(v.dot(n))*(v.dot(n)));
     Vector3d x=0.5*(B1+alfa*(B2-B1)+A1+beta*(A2-A1));
+
     return std::make_tuple(x,beta);
 }
 
@@ -812,7 +824,9 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
 
 
 
+
 //procedura che crea le mesh sulle fratture a partire dalle tracce
+
 void definisci_mesh(DFN& disc_frac_net, double tol)
 {
     //controllo che la tolleranza scelta dall'utente non sia minore della precisione di macchina
@@ -943,4 +957,5 @@ void definisci_mesh(DFN& disc_frac_net, double tol)
         std::cout << "************************************"<<std::endl;
     }
 }
+
 }
