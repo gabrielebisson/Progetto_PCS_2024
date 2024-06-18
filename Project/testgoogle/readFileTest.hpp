@@ -176,15 +176,14 @@ TEST(ScartaFrattureTest, NoIntersection) {
         {Eigen::Vector3d(2, 2, 0), Eigen::Vector3d(3, 2, 0), Eigen::Vector3d(3, 3, 0), Eigen::Vector3d(2, 3, 0)}
     };
     dfn.numVertici = {4, 4};
-
-    std::vector<Eigen::Vector3d> versori_normali = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1)};
+    dfn.versori = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1)};
     double tol = 0.1;
 
-    auto result = scarta_fratture(dfn, versori_normali, tol);
+    auto result = LibraryDFN::scarta_fratture(dfn, tol);
     EXPECT_TRUE(result.empty());
 }
 
-// Test per il caso in cui le fratture si intersecano
+//Test per il caso in cui le fratture si intersecano
 TEST(ScartaFrattureTest, Intersection) {
     LibraryDFN::DFN dfn;
     dfn.numFratture = 2;
@@ -193,11 +192,10 @@ TEST(ScartaFrattureTest, Intersection) {
         {Eigen::Vector3d(1, 1, -1), Eigen::Vector3d(3, 1, -1), Eigen::Vector3d(3, 1, 1), Eigen::Vector3d(1, 1, 1)}
     };
     dfn.numVertici = {4, 4};
-
-    std::vector<Eigen::Vector3d> versori_normali = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 1, 0)};
+    dfn.versori = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 1, 0)};
     double tol = 0.1;
 
-    auto result = scarta_fratture(dfn, versori_normali, tol);
+    auto result = LibraryDFN::scarta_fratture(dfn, tol);
 
     ASSERT_EQ(result.size(), 1);
     EXPECT_EQ(result[0][0], 0);
@@ -212,11 +210,10 @@ TEST(ScartaFrattureTest, Touching) {
         {Eigen::Vector3d(1, 0, 0), Eigen::Vector3d(2, 0, 0), Eigen::Vector3d(2, 1, 0), Eigen::Vector3d(1, 1, 0)}
     };
     dfn.numVertici = {4, 4};
-
-    std::vector<Eigen::Vector3d> versori_normali = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1)};
+    dfn.versori = {Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1)};
     double tol = 0.1;
 
-    auto result = scarta_fratture(dfn, versori_normali, tol);
+    auto result = LibraryDFN::scarta_fratture(dfn, tol);
     EXPECT_TRUE(result.empty());
 }
 
@@ -283,8 +280,8 @@ TEST(MemorizzaTracceTest, DFN) {
 }
 
 // Test per la funzione che trova l'intersezione tra 2 segmenti
+// Segmenti che si intersecano
 TEST(IntersecaSegmentiTest, Intersection) {
-
     // Definizione dei punti dei segmenti A e B
     Eigen::Vector3d A1(0, 0, 0);
     Eigen::Vector3d A2(1, 1, 1);
@@ -293,27 +290,27 @@ TEST(IntersecaSegmentiTest, Intersection) {
     double tol = 1e-6;
 
     // Chiamata della funzione per verificare l'intersezione
-    auto [point, interno] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2, tol);
+    auto [point, beta] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2);
 
     // Verifica che i segmenti si intersecano e che il punto di intersezione è corretto
-    EXPECT_TRUE(interno);
     EXPECT_NEAR(point.x(), 0.5, tol);
     EXPECT_NEAR(point.y(), 0.5, tol);
     EXPECT_NEAR(point.z(), 0.5, tol);
+    EXPECT_NEAR(beta, 0.5, tol); // Verifica se beta è all'interno dell'intervallo
 }
 
+// Segmenti che non si intersecano
 TEST(IntersecaSegmentiTest, NoIntersection) {
-
     // Definizione dei punti dei segmenti A e B
     Eigen::Vector3d A1(0, 0, 0);
-    Eigen::Vector3d A2(1, 1, 1);
-    Eigen::Vector3d B1(2, 2, 2);
-    Eigen::Vector3d B2(3, 3, 3);
+    Eigen::Vector3d A2(1, 1, 0);
+    Eigen::Vector3d B1(2, 2, 0);
+    Eigen::Vector3d B2(3, 3, 0);
     double tol = 1e-6;
 
     // Chiamata della funzione per verificare l'intersezione
-    auto [point, interno] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2, tol);
+    auto [point, beta] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2);
 
     // Verifica che i segmenti non si intersecano
-    EXPECT_FALSE(interno);
+    EXPECT_TRUE(beta < 0 || beta > 1);
 }
