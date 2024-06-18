@@ -5,9 +5,6 @@
 using namespace Eigen;
 
 namespace LibraryDFN{
-
-
-
 //***********************************************PARTE 1***********************************************
 
 //funzione che suddivide la frattura in triangoli (assumo che i vertici del poligono non siano allineati)
@@ -42,9 +39,7 @@ inline Vector3d versore_normale(const std::vector<Vector3d>& poligono)
 
 
 //funzione che scarta le fratture che sicuramente non si intersecano, l'output è un vettore di indici degli indici di DFN.idfratture che non sono stati scartati, quindi su cui bisogna controllare manualmente se si intersechino
-
 std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net,const double& tol)
-
 {
     std::vector<std::array<unsigned int,2>> indici_validi; //vettore finale di output con gli indici che non hanno passato i test
 
@@ -250,22 +245,16 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
         if(pos!=2)
         {
             //non ricommento tutto in quanto è molto simile a prima (però non è proprio uguale identico, ci sono alcuni passaggi che qua non servono più)
-
             std::vector<double> zeta_ruotate_1;
             zeta_ruotate_1.resize(disc_frac_net.numVertici[coppia[0]]);
-
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
                 zeta_ruotate_1[i]=disc_frac_net.versori[coppia[1]].dot(disc_frac_net.vertici[coppia[0]][i]-disc_frac_net.vertici[coppia[1]][0]);
             }
-
             triangolazione=triangola_frattura(disc_frac_net,coppia[1]);
-
             for(unsigned int i=0;i<disc_frac_net.numVertici[coppia[0]];i++)
             {
-
                 if(!(zeta_ruotate_1[i]*zeta_ruotate_1[(i+1)%disc_frac_net.numVertici[coppia[0]]]>tol))
-
                 {
                     for(auto& triangolo:triangolazione)
                     {
@@ -330,15 +319,15 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
 }
 
 
+
+
 //***********************************************PARTE 2***********************************************
 
 
 
 
 //funzione che trova l'intersezione tra 2 segmenti, in verità trova il punto medio del segmento di lunghezza minima che collega i 2 segmenti, che, se i 2 segmenti sono complanari, coincide con il punto di intersezione
-
 std::tuple<Vector3d,double> interseca_segmenti(const Vector3d& A1,const Vector3d& A2,const Vector3d& B1,const Vector3d& B2)
-
 {
     Vector3d n=(A2-A1).normalized();
     Vector3d v=B2-B1;
@@ -373,12 +362,6 @@ void aggiorna_mesh(PolygonalMesh& mesh
         std::array<unsigned int,2> est_taglio; //id estremi taglio
         unsigned int pos=0;
         //NOTA: per costruzione, se pos==2, non succederà che il programma tenterà di scrivere a est_taglio[pos], generando un comportamento indefinito
-
-        //controllo che la traccia non sia contenuta in una cella 1D o sia uguale ad essa (può succedere solo ai bordi)
-        if(lati_coinvolti[i][1]==std::numeric_limits<unsigned int>::max())
-        {
-            continue; //la traccia non mi va a modificare la mesh
-        }
 
         //aggiorno i punti d'intersezione e i relativi lati adiacenti a meno che questi non esistano già
         for(const unsigned int& lato:lati_coinvolti[i])
@@ -567,7 +550,7 @@ void aggiorna_mesh(PolygonalMesh& mesh
         }
         else
         {
-            throw std::runtime_error("Impossibile aggiornare la mesh");
+            throw std::runtime_error("Impossibile aggiornare la mesh: il programma riscontra problemi in alcuni controlli legati alla tolleranza relativa, prova ad aumentarla per risolvere il problema");
             return;
         }
         //------PASSO 5------: creazione del secondo poligono
@@ -579,7 +562,7 @@ void aggiorna_mesh(PolygonalMesh& mesh
         }
         else
         {
-            throw std::runtime_error("Impossibile aggiornare la mesh");
+            throw std::runtime_error("Impossibile aggiornare la mesh: il programma riscontra problemi in alcuni controlli legati alla tolleranza relativa, prova ad aumentarla per risolvere il problema");
             return;
         }
 
@@ -659,7 +642,7 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
                 }
                 else // B congiunge D
                 {
-                    if(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo].size()==1)
+                    if(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza].size()==1)
                     {
                         std::cerr<<"C'e' un errore nel taglio del poligono "<< poligoni[i]<<std::endl;
                         vertici_nuovo_poligono={std::numeric_limits<unsigned int>::max()};
@@ -673,7 +656,7 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
             }
             else // B congiunge C
             {
-                if(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo].size()==1)
+                if(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza].size()==1)
                 {
                     std::cerr<<"C'e' un errore nel taglio del poligono "<< poligoni[i]<<std::endl;
                     vertici_nuovo_poligono={std::numeric_limits<unsigned int>::max()};
@@ -756,8 +739,12 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
         double z1=vec2_rot.dot(p1-est1);
         double x2=vec1_rot.dot(p2-est1);
         double z2=vec2_rot.dot(p2-est1);
-        if (!(z2*z1>tol))
+        if (!(z2*z1>tol)) //se il lato interseca l'asse che contiene la traccia
         {
+            if(!(std::abs(z1-z2)>tol)) //i 2 segmenti vivono sulla stessa retta
+            {
+                return INFINITY;
+            }
             return x2-z2*(x1-x2)/(z1-z2);
         }
         return NAN;
@@ -776,7 +763,7 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
 
         //serve dopo
         double intersezione_precedente=NAN;
-        for(auto& lato:mesh.Cell2DEdges[n2d])
+        for(auto& lato:mesh.Cell2DEdges[n2d]) //per tutti i lati della cella 2D
         {
             if(lato>=mesh.NumberCell1D)
             {
@@ -788,6 +775,12 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
             Vector3d& p1=mesh.Cell0DCoordinates[mesh.Cell1DVertices[lato][0]];
             Vector3d& p2=mesh.Cell0DCoordinates[mesh.Cell1DVertices[lato][1]];
             double intersezione=ottieni_intersezione(p1,p2);
+            if(intersezione==INFINITY) //la traccia vive nel bordo della cella 2D, quindi non va a modificare tale cella
+            {
+                min_sez=0.;
+                max_sez=0.;
+                break;
+            }
             if(!std::isnan(intersezione)) //se c'è intersezione tra il lato e l'asse che contiene la traccia
             {
                 if(!std::isnan(intersezione_precedente)) //se anche il lato prima si intersecava
@@ -826,7 +819,6 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
 
 
 //procedura che crea le mesh sulle fratture a partire dalle tracce
-
 void definisci_mesh(DFN& disc_frac_net, double tol)
 {
     //controllo che la tolleranza scelta dall'utente non sia minore della precisione di macchina
@@ -954,8 +946,7 @@ void definisci_mesh(DFN& disc_frac_net, double tol)
         }
         disc_frac_net.meshPoligonali.push_back(mesh);
         std::cout <<"Infine le celle 0D sono " << mesh.NumberCell0D<<", le celle 1D sono "<<mesh.NumberCell1D<<" e le celle 2D sono "<<mesh.NumberCell2D<<"."<<std::endl;
-        std::cout << "************************************"<<std::endl;
+        std::cout << "************************************"<<std::endl<<std::endl;
     }
 }
-
 }
