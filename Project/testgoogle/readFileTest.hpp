@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include "StructDFN.hpp"
+#include "PolygonalMesh.hpp"
 #include "Utils.hpp"
 #include <Eigen/Eigen>
 #include <vector>
@@ -51,6 +52,8 @@ TEST(ReadDFNFromFileTest, FileInput) {
     EXPECT_EQ(dfn.vertici[2][3], Eigen::Vector3d(-0.23777799999999999, 0.5, 0.45283889999999999));
 }
 
+
+
 // Test per la funzione printTraces
 TEST(PrintTracesTest, FileOutput) {
     LibraryDFN::DFN dfn;
@@ -87,6 +90,8 @@ TEST(PrintTracesTest, FileOutput) {
     EXPECT_EQ(lines[3], "0; 0; 1; 0; 0; 0; 1; 1; 1");
     EXPECT_EQ(lines[4], "1; 1; 2; 1; 1; 1; 2; 2; 2");
 }
+
+// Test per la funzione printTracesByFracture
 TEST(PrintTracesByFractureTest, Output) {
     LibraryDFN::DFN dfn;
 
@@ -138,6 +143,8 @@ TEST(PrintTracesByFractureTest, Output) {
     EXPECT_EQ(lines[14], "# TraceId; Tips; Length");
 }
 
+
+
 // Test per funzione che triangola la frattura
 TEST(TriangolaFratturaTest, Frattura) {
     LibraryDFN::DFN dfn;
@@ -147,6 +154,8 @@ TEST(TriangolaFratturaTest, Frattura) {
     auto result = triangola_frattura(dfn, 0);
     EXPECT_EQ(result, expected);
 }
+
+
 
 // Test per funzione che trova il versore perpendicolare al piano che contiene il poligono
 TEST(VersoreNormaleTest, Poligono) {
@@ -164,6 +173,7 @@ TEST(VersoreNormaleTest, Poligono) {
     EXPECT_NEAR(normal[1], expected_normal[1], 1e-6);
     EXPECT_NEAR(normal[2], expected_normal[2], 1e-6);
 }
+
 
 
 // Test funzione scarta fratture
@@ -201,6 +211,7 @@ TEST(ScartaFrattureTest, Intersection) {
     EXPECT_EQ(result[0][0], 0);
     EXPECT_EQ(result[0][1], 1);
 }
+
 // Test per il caso in cui le fratture si toccano ma non si intersecano
 TEST(ScartaFrattureTest, Touching) {
     LibraryDFN::DFN dfn;
@@ -216,6 +227,8 @@ TEST(ScartaFrattureTest, Touching) {
     auto result = LibraryDFN::scarta_fratture(dfn, tol);
     EXPECT_TRUE(result.empty());
 }
+
+
 
 // Test per funzione che memorizza le tracce
 TEST(MemorizzaTracceTest, DFN) {
@@ -246,10 +259,7 @@ TEST(MemorizzaTracceTest, DFN) {
         }
     };
 
-    // Chiamata alla funzione da testare
     memorizza_tracce(dfn, 1e-6);
-
-    // Asserzioni per verificare i risultati
 
     // Prima frattura
     EXPECT_EQ(dfn.idFratture[0], 0);
@@ -278,6 +288,8 @@ TEST(MemorizzaTracceTest, DFN) {
     EXPECT_EQ(dfn.vertici[2][2], Eigen::Vector3d(0.31618370000000001, 0.5, 0.45283889999999999));
     EXPECT_EQ(dfn.vertici[2][3], Eigen::Vector3d(-0.23777799999999999, 0.5, 0.45283889999999999));
 }
+
+
 
 // Test per la funzione che trova l'intersezione tra 2 segmenti
 // Segmenti che si intersecano
@@ -314,3 +326,321 @@ TEST(IntersecaSegmentiTest, NoIntersection) {
     // Verifica che i segmenti non si intersecano
     EXPECT_TRUE(beta < 0 || beta > 1);
 }
+
+
+
+// Test per la funzione che aggiorna la mesh
+TEST(AggiornaMeshTest, BaseCase) {
+    // Imposta dati della mesh
+    PolygonalMesh mesh;
+    double tol = std::numeric_limits<double>::epsilon();
+    mesh.NumberCell2D = 3;
+    mesh.NumberCell1D = 5;
+    mesh.NumberCell0D = 6;
+    mesh.Cell2DId = {0, 1, 2};
+    mesh.Cell1DId = {0, 1, 2, 3, 4};
+    mesh.Cell0DId = {0, 1, 2, 3, 4, 5};
+    mesh.Cell2DVertices = {{0, 1, 2, 3}, {2, 3, 4}, {3, 4, 5}};
+    mesh.Cell2DEdges = {{0, 1, 2, 3}, {2, 3, 4}, {3, 4, 0}};
+    mesh.Cell1DVertices = {{0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}};
+    mesh.Cell1DMarkers = {0, 1, 1, 0, 0};
+    mesh.Cell0DCoordinates = {
+        Eigen::Vector3d(0.0, 0.0, 0.0),
+        Eigen::Vector3d(1.0, 0.0, 0.0),
+        Eigen::Vector3d(1.0, 1.0, 0.0),
+        Eigen::Vector3d(0.0, 1.0, 0.0),
+        Eigen::Vector3d(-1.0, 1.0, 0.0),
+        Eigen::Vector3d(-1.0, 0.0, 0.0)
+    };
+
+    // Parametri di test per aggiorna_mesh
+    std::vector<unsigned int> poligoni = {0};
+    std::vector<std::array<unsigned int, 2>> lati_coinvolti = {{0, 1}, {1, 2}};
+    Eigen::Vector3d est1(0.5, 0.0, 0.0);
+    Eigen::Vector3d est2(0.5, 0.0, 0.0);
+
+    // Imposta dati DFN
+    LibraryDFN::DFN dfn;
+    dfn.numFratture = 3;
+    dfn.idFratture = {0, 1, 2};
+    dfn.numVertici = {{7}, {7}, {3}};
+    dfn.vertici = {
+        {Eigen::Vector3d(5.0, 2.0, 0.0), Eigen::Vector3d(11.0, 0.0, 0.0), Eigen::Vector3d(20.0, 0.0, 0.0), Eigen::Vector3d(22.0, 8.0, 0.0), Eigen::Vector3d(14.0, 16.0, 0.0), Eigen::Vector3d(2.0, 13.0, 0.0), Eigen::Vector3d(0.0, 7.0, 0.0)},
+        {Eigen::Vector3d(-19.0, 0.0, 0.0), Eigen::Vector3d(-7.0, 0.0, 0.0), Eigen::Vector3d(-5.0, 3.0, 0.0), Eigen::Vector3d(-7.0, 6.0, 0.0), Eigen::Vector3d(-10.0, 10.0, 0.0), Eigen::Vector3d(-13.0, 11.0, 0.0), Eigen::Vector3d(-19.0, 8.0, 0.0)},
+        {Eigen::Vector3d(4.0, -8.0, 0.0), Eigen::Vector3d(12.0, -8.0, 0.0), Eigen::Vector3d(8.0, -1.0, 0.0)}
+    };
+    dfn.versori = {Eigen::Vector3d(0.0, 0.0, 1.0), Eigen::Vector3d(0.0, 0.0, 1.0), Eigen::Vector3d(0.0, 0.0, 1.0)};
+    dfn.idTracce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+    dfn.estremiTracce = {
+        {Eigen::Vector3d(1.0, 10.0, 0.0), Eigen::Vector3d(17.0, 13.0, 0.0)},
+        {Eigen::Vector3d(6.0, 14.0, 0.0), Eigen::Vector3d(8.0, 1.0, 0.0)},
+        {Eigen::Vector3d(19.0, 11.0, 0.0), Eigen::Vector3d(19.0, 0.0, 0.0)},
+        {Eigen::Vector3d(10.0, 13.0, 0.0), Eigen::Vector3d(6.0, 6.0, 0.0)},
+        {Eigen::Vector3d(15.0, 9.0, 0.0), Eigen::Vector3d(19.0, 11.0, 0.0)},
+        {Eigen::Vector3d(15.0, 6.0, 0.0), Eigen::Vector3d(19.0, 5.0, 0.0)},
+        {Eigen::Vector3d(11.0, 7.0, 0.0), Eigen::Vector3d(12.0, 5.0, 0.0)},
+        {Eigen::Vector3d(-13.0, 0.0, 0.0), Eigen::Vector3d(-13.0, 11.0, 0.0)},
+        {Eigen::Vector3d(-18.0, 6.0, 0.0), Eigen::Vector3d(-10.0, 6.0, 0.0)},
+        {Eigen::Vector3d(-11.0, 5.0, 0.0), Eigen::Vector3d(-10.0, 1.0, 0.0)},
+        {Eigen::Vector3d(-13.0, 6.0, 0.0), Eigen::Vector3d(-15.0, 9.0, 0.0)},
+        {Eigen::Vector3d(-17.0, 2.0, 0.0), Eigen::Vector3d(-15.0, 4.0, 0.0)},
+        {Eigen::Vector3d(-11.5, 8.0, 0.0), Eigen::Vector3d(-13.0, 6.0, 0.0)},
+        {Eigen::Vector3d(-7.0, 2.0, 0.0), Eigen::Vector3d(-7.0, 3.0, 0.0)},
+        {Eigen::Vector3d(8.0, -5.0, 0.0), Eigen::Vector3d(12.0, -8.0, 0.0)},
+        {Eigen::Vector3d(8.0, -3.5, 0.0), Eigen::Vector3d(8.0, -1.0, 0.0)},
+        {Eigen::Vector3d(6.0, -6.5, 0.0), Eigen::Vector3d(4.0, -8.0, 0.0)},
+        {Eigen::Vector3d(8.0, -6.0, 0.0), Eigen::Vector3d(8.0, -4.0, 0.0)},
+        {Eigen::Vector3d(6.0, 14.0, 0.0), Eigen::Vector3d(10.0, 15.0, 0.0)}
+    };
+    dfn.traccePassanti = {{0, 1, 2}, {7}, {}};
+    dfn.tracceNonPassanti = {{3, 4, 5, 6, 18}, {8, 9, 10, 11, 12, 13}, {14, 15, 16, 17}};
+
+    // Chiamata alla funzione da testare
+    LibraryDFN::definisci_mesh(dfn, tol);
+    LibraryDFN::aggiorna_mesh(mesh, poligoni, lati_coinvolti, est1, est2, tol);
+
+    // Verifiche sui risultati attesi
+    ASSERT_EQ(mesh.NumberCell2D, 4);
+    ASSERT_EQ(mesh.NumberCell1D, 7);
+    ASSERT_EQ(mesh.NumberCell0D, 7);
+
+    // Verifica la struttura delle celle 2D
+    ASSERT_EQ(mesh.Cell2DVertices[0].size(), 5);
+    ASSERT_EQ(mesh.Cell2DVertices[1].size(), 3);
+    ASSERT_EQ(mesh.Cell2DVertices[2].size(), 4);
+    ASSERT_EQ(mesh.Cell2DVertices[3].size(), 3);
+
+    // Verifica la struttura delle celle 1D
+    ASSERT_EQ(mesh.Cell1DVertices.size(), 7);
+    ASSERT_EQ(mesh.Cell1DVertices[5], (std::array<unsigned int, 2>{6, 1}));
+    ASSERT_EQ(mesh.Cell1DVertices[6], (std::array<unsigned int, 2>{6, 1}));
+
+    // Verifica markers
+    ASSERT_EQ(mesh.Cell1DMarkers.size(), 7);
+    ASSERT_EQ(mesh.Cell1DMarkers[5], 0);
+    ASSERT_EQ(mesh.Cell1DMarkers[6], 0);
+
+}
+
+
+
+// // Test per la funzione DefinisciMesh
+// TEST(DefinisciMeshTest, BaseCase) {
+//     double tol = std::numeric_limits<double>::epsilon();
+
+//     // Definizione dei dati per DFN
+//     LibraryDFN::DFN dfn;
+//     dfn.numFratture = 3;
+//     dfn.idFratture = {0, 1, 2};
+//     dfn.numVertici = {{7}, {7}, {3}};
+//     dfn.vertici = {
+//         {
+//             Eigen::Vector3d(5., 2., 0.),
+//             Eigen::Vector3d(11., 0., 0.),
+//             Eigen::Vector3d(20., 0., 0.),
+//             Eigen::Vector3d(22., 8., 0.),
+//             Eigen::Vector3d(14., 16., 0.),
+//             Eigen::Vector3d(2., 13., 0.),
+//             Eigen::Vector3d(0., 7., 0.)
+//         },
+//         {
+//             Eigen::Vector3d(-19., 0, 0.),
+//             Eigen::Vector3d(-7., 0., 0.),
+//             Eigen::Vector3d(-5., 3., 0.),
+//             Eigen::Vector3d(-7., 6., 0.),
+//             Eigen::Vector3d(-10., 10., 0.),
+//             Eigen::Vector3d(-13., 11., 0.),
+//             Eigen::Vector3d(-19., 8., 0.)
+//         },
+//         {
+//             Eigen::Vector3d(4., -8., 0.),
+//             Eigen::Vector3d(12., -8., 0.),
+//             Eigen::Vector3d(8., -1., 0.)
+//         }
+//     };
+//     dfn.versori = {Eigen::Vector3d(0., 0., 1.), Eigen::Vector3d(0., 0., 1.), Eigen::Vector3d(0., 0., 1.)};
+//     dfn.idTracce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+//     dfn.estremiTracce = {
+//         {Eigen::Vector3d(1., 10., 0.), Eigen::Vector3d(17., 13., 0.)},
+//         {Eigen::Vector3d(6., 14., 0.), Eigen::Vector3d(8., 1., 0.)},
+//         {Eigen::Vector3d(19., 11., 0.), Eigen::Vector3d(19., 0., 0.)},
+//         {Eigen::Vector3d(10., 13., 0.), Eigen::Vector3d(6., 6., 0.)},
+//         {Eigen::Vector3d(15., 9., 0.), Eigen::Vector3d(19., 11., 0.)},
+//         {Eigen::Vector3d(15., 6., 0.), Eigen::Vector3d(19., 5., 0.)},
+//         {Eigen::Vector3d(11., 7., 0.), Eigen::Vector3d(12., 5., 0.)},
+//         {Eigen::Vector3d(-13., 0., 0.), Eigen::Vector3d(-13., 11., 0.)},
+//         {Eigen::Vector3d(-18., 6., 0.), Eigen::Vector3d(-10., 6., 0.)},
+//         {Eigen::Vector3d(-11., 5., 0.), Eigen::Vector3d(-10., 1., 0.)},
+//         {Eigen::Vector3d(-13., 6., 0.), Eigen::Vector3d(-15., 9., 0.)},
+//         {Eigen::Vector3d(-17., 2., 0.), Eigen::Vector3d(-15., 4., 0.)},
+//         {Eigen::Vector3d(-11.5, 8., 0.), Eigen::Vector3d(-13., 6., 0.)},
+//         {Eigen::Vector3d(-7., 2., 0.), Eigen::Vector3d(-7., 3., 0.)},
+//         {Eigen::Vector3d(8., -5., 0.), Eigen::Vector3d(12., -8., 0.)},
+//         {Eigen::Vector3d(8., -3.5, 0.), Eigen::Vector3d(8., -1., 0.)},
+//         {Eigen::Vector3d(6., -6.5, 0.), Eigen::Vector3d(4., -8., 0.)},
+//         {Eigen::Vector3d(8., -6., 0.), Eigen::Vector3d(8., -4., 0.)},
+//         {Eigen::Vector3d(6., 14., 0.), Eigen::Vector3d(10., 15., 0.)}
+//     };
+//     dfn.traccePassanti = {{0, 1, 2}, {7}, {}};
+//     dfn.tracceNonPassanti = {{3, 4, 5, 6, 18}, {8, 9, 10, 11, 12, 13}, {14, 15, 16, 17}};
+
+//     // Chiamata alla funzione da testare
+//     LibraryDFN::definisci_mesh(dfn, tol);
+
+//     // Verifiche sui risultati attesi
+//     ASSERT_EQ(dfn.meshPoligonali.size(), 3);
+
+//     // Verifica della prima frattura
+//     const auto& mesh0 = dfn.meshPoligonali[0];
+//     ASSERT_EQ(mesh0.NumberCell0D, 7);
+//     ASSERT_EQ(mesh0.NumberCell1D, 7);
+//     ASSERT_EQ(mesh0.NumberCell2D, 1);
+
+//     // Verifica delle coordinate dei vertici della prima frattura
+//     for (unsigned int i = 0; i < 7; ++i) {
+//         ASSERT_TRUE((mesh0.Cell0DCoordinates[i] - dfn.vertici[0][i]).norm() < tol);
+//     }
+
+//     // Verifica della seconda frattura
+//     const auto& mesh1 = dfn.meshPoligonali[1];
+//     ASSERT_EQ(mesh1.NumberCell0D, 7);
+//     ASSERT_EQ(mesh1.NumberCell1D, 7);
+//     ASSERT_EQ(mesh1.NumberCell2D, 1);
+
+//     // Verifica delle coordinate dei vertici della seconda frattura
+//     for (unsigned int i = 0; i < 7; ++i) {
+//         ASSERT_TRUE((mesh1.Cell0DCoordinates[i] - dfn.vertici[1][i]).norm() < tol);
+//     }
+
+//     // Verifica della terza frattura
+//     const auto& mesh2 = dfn.meshPoligonali[2];
+//     ASSERT_EQ(mesh2.NumberCell0D, 3);
+//     ASSERT_EQ(mesh2.NumberCell1D, 3);
+//     ASSERT_EQ(mesh2.NumberCell2D, 1);
+
+//     // Verifica delle coordinate dei vertici della terza frattura
+//     for (unsigned int i = 0; i < 3; ++i) {
+//         ASSERT_TRUE((mesh2.Cell0DCoordinates[i] - dfn.vertici[2][i]).norm() < tol);
+//     }
+// }
+
+
+
+// Test per nuovo_poligono
+// caso normale
+TEST(NuovoPoligonoTest, CasoNormale) {
+    // Inizializza PolygonalMesh
+    PolygonalLibrary::PolygonalMesh mesh;
+    mesh.NumberCell0D = 4;
+    mesh.Cell0DId = {0, 1, 2, 3};
+    mesh.Cell0DCoordinates = {Eigen::Vector3d(0,0,0), Eigen::Vector3d(1,0,0), Eigen::Vector3d(1,1,0), Eigen::Vector3d(0,1,0)};
+    mesh.Cell0DMarkers = {0, 0, 0, 0};
+
+    mesh.NumberCell1D = 4;
+    mesh.Cell1DId = {0, 1, 2, 3};
+    mesh.Cell1DVertices = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
+    mesh.Cell1DMarkers = {0, 0, 0, 0};
+
+    mesh.NumberCell2D = 1;
+    mesh.Cell2DId = {0};
+    mesh.Cell2DVertices = {{0, 1, 2, 3}};
+    mesh.Cell2DEdges = {{0, 1, 2, 3}};
+
+    // Inizializza la mappa dei vecchi lati ai nuovi lati
+    std::map<unsigned int, std::vector<unsigned int>> mappa_vecchi_lati_nuovi_lati = {
+        {0, {4}}, {1, {5}}, {2, {6}}, {3, {7}}
+    };
+
+    // Inizializza la mappa degli estremi dei nuovi lati ai nuovi lati
+    std::map<std::array<unsigned int, 2>, unsigned int> mappa_estremi_nuovi_lati_nuovi_lati = {
+        {{1, 0}, 4}, {{0, 3}, 7}, {{3, 2}, 6}, {{2, 1}, 5}
+    };
+
+    // Inizializza i poligoni
+    std::vector<unsigned int> poligoni = {0};
+
+    unsigned int vecchio_lato_partenza = 0;
+    unsigned int vecchio_lato_arrivo = 2; // Cambiato per evitare il caso degenere
+    unsigned int est_taglio_partenza = 0;
+    unsigned int est_taglio_arrivo = 2; // Cambiato per evitare il caso degenere
+    unsigned int ID_1D = 4;
+
+    // Chiama la funzione nuovo_poligono
+    std::array<std::vector<unsigned int>, 2> result = LibraryDFN::nuovo_poligono(
+        mesh, mappa_vecchi_lati_nuovi_lati, mappa_estremi_nuovi_lati_nuovi_lati,
+        poligoni, 0, vecchio_lato_partenza, vecchio_lato_arrivo,
+        est_taglio_partenza, est_taglio_arrivo, ID_1D
+        );
+
+    // Verifica che il risultato sia corretto
+    std::vector<unsigned int> expected_vertices = {2, 0, 1};
+    std::vector<unsigned int> expected_edges = {4, 4, 1};
+
+    EXPECT_EQ(result[0], expected_vertices);
+    EXPECT_EQ(result[1], expected_edges);
+}
+
+// Test per il caso degenere (triangolo)
+TEST(NuovoPoligonoTest, CasoDegenere) {
+    // Inizializza PolygonalMesh
+    PolygonalLibrary::PolygonalMesh mesh;
+    mesh.NumberCell0D = 4;
+    mesh.Cell0DId = {0, 1, 2, 3};
+    mesh.Cell0DCoordinates = {Eigen::Vector3d(0,0,0), Eigen::Vector3d(1,0,0), Eigen::Vector3d(1,1,0), Eigen::Vector3d(0,1,0)};
+    mesh.Cell0DMarkers = {0, 0, 0, 0};
+
+    mesh.NumberCell1D = 4;
+    mesh.Cell1DId = {0, 1, 2, 3};
+    mesh.Cell1DVertices = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
+    mesh.Cell1DMarkers = {0, 0, 0, 0};
+
+    mesh.NumberCell2D = 1;
+    mesh.Cell2DId = {0};
+    mesh.Cell2DVertices = {{0, 1, 2, 3}};
+    mesh.Cell2DEdges = {{0, 1, 2, 3}};
+
+    // Inizializza la mappa dei vecchi lati ai nuovi lati
+    std::map<unsigned int, std::vector<unsigned int>> mappa_vecchi_lati_nuovi_lati = {
+        {0, {4}}, {1, {5}}, {2, {6}}, {3, {7}}
+    };
+
+    // Inizializza la mappa degli estremi dei nuovi lati ai nuovi lati
+    std::map<std::array<unsigned int, 2>, unsigned int> mappa_estremi_nuovi_lati_nuovi_lati = {
+        {{1, 0}, 4}, {{0, 3}, 7}, {{3, 2}, 6}, {{2, 1}, 5}
+    };
+
+    // Inizializza i poligoni
+    std::vector<unsigned int> poligoni = {0};
+
+    unsigned int vecchio_lato_partenza = 0;
+    unsigned int vecchio_lato_arrivo = 2;
+    unsigned int est_taglio_partenza = 0;
+    unsigned int est_taglio_arrivo = 2;
+    unsigned int ID_1D = 5;
+
+    // Chiama la funzione nuovo_poligono
+    std::array<std::vector<unsigned int>, 2> result =  LibraryDFN::nuovo_poligono(
+        mesh, mappa_vecchi_lati_nuovi_lati, mappa_estremi_nuovi_lati_nuovi_lati,
+        poligoni, 0, vecchio_lato_partenza, vecchio_lato_arrivo,
+        est_taglio_partenza, est_taglio_arrivo, ID_1D
+        );
+
+    // Poiché il taglio passa esattamente sui vertici, il risultato atteso è che i nuovi vertici e lati siano specifici
+    std::vector<unsigned int> expected_vertices = {2, 0, 1};
+    std::vector<unsigned int> expected_edges = {5, 4, 1};
+
+    EXPECT_EQ(result[0], expected_vertices);
+    EXPECT_EQ(result[1], expected_edges);
+}
+
+
+
+
+
+
+
+
+
+
+
+
