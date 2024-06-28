@@ -424,106 +424,93 @@ TEST(AggiornaMeshTest, BaseCase) {
 
 
 
-// // Test per la funzione DefinisciMesh
-// TEST(DefinisciMeshTest, BaseCase) {
-//     double tol = std::numeric_limits<double>::epsilon();
+// Test per la funzione DefinisciMesh
+TEST(DefinisciMeshTest, BaseCase) {
+    double tol = std::numeric_limits<double>::epsilon();
 
-//     // Definizione dei dati per DFN
-//     LibraryDFN::DFN dfn;
-//     dfn.numFratture = 3;
-//     dfn.idFratture = {0, 1, 2};
-//     dfn.numVertici = {{7}, {7}, {3}};
-//     dfn.vertici = {
-//         {
-//             Eigen::Vector3d(5., 2., 0.),
-//             Eigen::Vector3d(11., 0., 0.),
-//             Eigen::Vector3d(20., 0., 0.),
-//             Eigen::Vector3d(22., 8., 0.),
-//             Eigen::Vector3d(14., 16., 0.),
-//             Eigen::Vector3d(2., 13., 0.),
-//             Eigen::Vector3d(0., 7., 0.)
-//         },
-//         {
-//             Eigen::Vector3d(-19., 0, 0.),
-//             Eigen::Vector3d(-7., 0., 0.),
-//             Eigen::Vector3d(-5., 3., 0.),
-//             Eigen::Vector3d(-7., 6., 0.),
-//             Eigen::Vector3d(-10., 10., 0.),
-//             Eigen::Vector3d(-13., 11., 0.),
-//             Eigen::Vector3d(-19., 8., 0.)
-//         },
-//         {
-//             Eigen::Vector3d(4., -8., 0.),
-//             Eigen::Vector3d(12., -8., 0.),
-//             Eigen::Vector3d(8., -1., 0.)
-//         }
-//     };
-//     dfn.versori = {Eigen::Vector3d(0., 0., 1.), Eigen::Vector3d(0., 0., 1.), Eigen::Vector3d(0., 0., 1.)};
-//     dfn.idTracce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
-//     dfn.estremiTracce = {
-//         {Eigen::Vector3d(1., 10., 0.), Eigen::Vector3d(17., 13., 0.)},
-//         {Eigen::Vector3d(6., 14., 0.), Eigen::Vector3d(8., 1., 0.)},
-//         {Eigen::Vector3d(19., 11., 0.), Eigen::Vector3d(19., 0., 0.)},
-//         {Eigen::Vector3d(10., 13., 0.), Eigen::Vector3d(6., 6., 0.)},
-//         {Eigen::Vector3d(15., 9., 0.), Eigen::Vector3d(19., 11., 0.)},
-//         {Eigen::Vector3d(15., 6., 0.), Eigen::Vector3d(19., 5., 0.)},
-//         {Eigen::Vector3d(11., 7., 0.), Eigen::Vector3d(12., 5., 0.)},
-//         {Eigen::Vector3d(-13., 0., 0.), Eigen::Vector3d(-13., 11., 0.)},
-//         {Eigen::Vector3d(-18., 6., 0.), Eigen::Vector3d(-10., 6., 0.)},
-//         {Eigen::Vector3d(-11., 5., 0.), Eigen::Vector3d(-10., 1., 0.)},
-//         {Eigen::Vector3d(-13., 6., 0.), Eigen::Vector3d(-15., 9., 0.)},
-//         {Eigen::Vector3d(-17., 2., 0.), Eigen::Vector3d(-15., 4., 0.)},
-//         {Eigen::Vector3d(-11.5, 8., 0.), Eigen::Vector3d(-13., 6., 0.)},
-//         {Eigen::Vector3d(-7., 2., 0.), Eigen::Vector3d(-7., 3., 0.)},
-//         {Eigen::Vector3d(8., -5., 0.), Eigen::Vector3d(12., -8., 0.)},
-//         {Eigen::Vector3d(8., -3.5, 0.), Eigen::Vector3d(8., -1., 0.)},
-//         {Eigen::Vector3d(6., -6.5, 0.), Eigen::Vector3d(4., -8., 0.)},
-//         {Eigen::Vector3d(8., -6., 0.), Eigen::Vector3d(8., -4., 0.)},
-//         {Eigen::Vector3d(6., 14., 0.), Eigen::Vector3d(10., 15., 0.)}
-//     };
-//     dfn.traccePassanti = {{0, 1, 2}, {7}, {}};
-//     dfn.tracceNonPassanti = {{3, 4, 5, 6, 18}, {8, 9, 10, 11, 12, 13}, {14, 15, 16, 17}};
+    // Definizione dei dati per DFN
+    LibraryDFN::DFN dfn;
+    dfn.numFratture = 3;
+    dfn.idFratture = {0, 1, 2};
+    dfn.numVertici = {{7}, {7}, {3}};
+    dfn.vertici = {
+        {
+            Eigen::Vector3d(5., 2., 0.),
+            Eigen::Vector3d(11., 0., 0.),
+            Eigen::Vector3d(20., 0., 0.),
+            Eigen::Vector3d(22., 8., 0.),
+            Eigen::Vector3d(14., 16., 0.),
+            Eigen::Vector3d(2., 13., 0.),
+            Eigen::Vector3d(0., 7., 0.)
+        },
+        {
+            Eigen::Vector3d(-19., 0, 0.),
+            Eigen::Vector3d(-7., 0., 0.),
+            Eigen::Vector3d(-5., 3., 0.),
+            Eigen::Vector3d(-7., 6., 0.),
+            Eigen::Vector3d(-10., 10., 0.),
+            Eigen::Vector3d(-13., 11., 0.),
+            Eigen::Vector3d(-19., 8., 0.)
+        },
+        {
+            Eigen::Vector3d(4., -8., 0.),
+            Eigen::Vector3d(12., -8., 0.),
+            Eigen::Vector3d(8., -1., 0.)
+        }
+    };
+    dfn.versori = {Eigen::Vector3d(0., 0., 1.), Eigen::Vector3d(0., 0., 1.), Eigen::Vector3d(0., 0., 1.)};
+    dfn.idTracce = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+    dfn.estremiTracce = {
+        {Eigen::Vector3d(1., 10., 0.), Eigen::Vector3d(17., 13., 0.)},
+        {Eigen::Vector3d(6., 14., 0.), Eigen::Vector3d(8., 1., 0.)},
+        {Eigen::Vector3d(19., 11., 0.), Eigen::Vector3d(19., 0., 0.)},
+        {Eigen::Vector3d(10., 13., 0.), Eigen::Vector3d(6., 6., 0.)},
+        {Eigen::Vector3d(15., 9., 0.), Eigen::Vector3d(19., 11., 0.)},
+        {Eigen::Vector3d(15., 6., 0.), Eigen::Vector3d(19., 5., 0.)},
+        {Eigen::Vector3d(11., 7., 0.), Eigen::Vector3d(12., 5., 0.)},
+        {Eigen::Vector3d(-13., 0., 0.), Eigen::Vector3d(-13., 11., 0.)},
+        {Eigen::Vector3d(-18., 6., 0.), Eigen::Vector3d(-10., 6., 0.)},
+        {Eigen::Vector3d(-11., 5., 0.), Eigen::Vector3d(-10., 1., 0.)},
+        {Eigen::Vector3d(-13., 6., 0.), Eigen::Vector3d(-15., 9., 0.)},
+        {Eigen::Vector3d(-17., 2., 0.), Eigen::Vector3d(-15., 4., 0.)},
+        {Eigen::Vector3d(-11.5, 8., 0.), Eigen::Vector3d(-13., 6., 0.)},
+        {Eigen::Vector3d(-7., 2., 0.), Eigen::Vector3d(-7., 3., 0.)},
+        {Eigen::Vector3d(8., -5., 0.), Eigen::Vector3d(12., -8., 0.)},
+        {Eigen::Vector3d(8., -3.5, 0.), Eigen::Vector3d(8., -1., 0.)},
+        {Eigen::Vector3d(6., -6.5, 0.), Eigen::Vector3d(4., -8., 0.)},
+        {Eigen::Vector3d(8., -6., 0.), Eigen::Vector3d(8., -4., 0.)},
+        {Eigen::Vector3d(6., 14., 0.), Eigen::Vector3d(10., 15., 0.)}
+    };
+    dfn.traccePassanti = {{0, 1, 2}, {7}, {}};
+    dfn.tracceNonPassanti = {{3, 4, 5, 6, 18}, {8, 9, 10, 11, 12, 13}, {14, 15, 16, 17}};
 
-//     // Chiamata alla funzione da testare
-//     LibraryDFN::definisci_mesh(dfn, tol);
+    // Chiamata alla funzione da testare
+    LibraryDFN::definisci_mesh(dfn, tol);
 
-//     // Verifiche sui risultati attesi
-//     ASSERT_EQ(dfn.meshPoligonali.size(), 3);
+    // Verifiche sui risultati attesi
+    // Numero di fratture
+    ASSERT_EQ(dfn.numFratture, 3);
 
-//     // Verifica della prima frattura
-//     const auto& mesh0 = dfn.meshPoligonali[0];
-//     ASSERT_EQ(mesh0.NumberCell0D, 7);
-//     ASSERT_EQ(mesh0.NumberCell1D, 7);
-//     ASSERT_EQ(mesh0.NumberCell2D, 1);
+    // Numero di vertici per frattura
+    ASSERT_EQ(dfn.numVertici[0], 7);
+    ASSERT_EQ(dfn.numVertici[1], 7);
+    ASSERT_EQ(dfn.numVertici[2], 3);
 
-//     // Verifica delle coordinate dei vertici della prima frattura
-//     for (unsigned int i = 0; i < 7; ++i) {
-//         ASSERT_TRUE((mesh0.Cell0DCoordinates[i] - dfn.vertici[0][i]).norm() < tol);
-//     }
+    for (size_t i = 0; i < dfn.vertici.size(); ++i) {
+        for (size_t j = 0; j < dfn.vertici[i].size(); ++j) {
+            ASSERT_TRUE(dfn.vertici[i][j].isApprox(expectedVertices[i][j], tol));
+        }
+    }
 
-//     // Verifica della seconda frattura
-//     const auto& mesh1 = dfn.meshPoligonali[1];
-//     ASSERT_EQ(mesh1.NumberCell0D, 7);
-//     ASSERT_EQ(mesh1.NumberCell1D, 7);
-//     ASSERT_EQ(mesh1.NumberCell2D, 1);
+    // Verificare le tracce passanti e non passanti
+    ASSERT_EQ(dfn.traccePassanti[0].size(), 3);
+    ASSERT_EQ(dfn.traccePassanti[1].size(), 1);
+    ASSERT_EQ(dfn.traccePassanti[2].size(), 0);
 
-//     // Verifica delle coordinate dei vertici della seconda frattura
-//     for (unsigned int i = 0; i < 7; ++i) {
-//         ASSERT_TRUE((mesh1.Cell0DCoordinates[i] - dfn.vertici[1][i]).norm() < tol);
-//     }
-
-//     // Verifica della terza frattura
-//     const auto& mesh2 = dfn.meshPoligonali[2];
-//     ASSERT_EQ(mesh2.NumberCell0D, 3);
-//     ASSERT_EQ(mesh2.NumberCell1D, 3);
-//     ASSERT_EQ(mesh2.NumberCell2D, 1);
-
-//     // Verifica delle coordinate dei vertici della terza frattura
-//     for (unsigned int i = 0; i < 3; ++i) {
-//         ASSERT_TRUE((mesh2.Cell0DCoordinates[i] - dfn.vertici[2][i]).norm() < tol);
-//     }
-// }
-
+    ASSERT_EQ(dfn.tracceNonPassanti[0].size(), 5);
+    ASSERT_EQ(dfn.tracceNonPassanti[1].size(), 6);
+    ASSERT_EQ(dfn.tracceNonPassanti[2].size(), 4);
+}
 
 
 // Test per nuovo_poligono
