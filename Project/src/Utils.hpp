@@ -15,7 +15,7 @@ namespace LibraryDFN
     //funzioni relative all'input/output
     void readDFNFromFile(const std::string& filename, DFN& dfn);
     void printTraces(const DFN& dfn, const std::string& filename);
-    void printTracesByFracture(const DFN& dfn, const std::string& filename);
+    void sortTracesAndPrintByFracture(DFN &dfn, const std::string& filename);
 
     //funzioni relative al calcolo delle tracce
     std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,unsigned int idr);

@@ -160,6 +160,8 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
     disc_frac_net.tips.reserve(fratture_suscettibili.size());
     disc_frac_net.tracce.reserve(fratture_suscettibili.size());
     disc_frac_net.lunghezze.reserve(fratture_suscettibili.size());
+    std::vector<std::vector<unsigned int>> tracce_passanti(disc_frac_net.numFratture,std::vector<unsigned int>());
+    std::vector<std::vector<unsigned int>> tracce_non_passanti(disc_frac_net.numFratture,std::vector<unsigned int>());
     unsigned int idt=0; //id delle tracce trovate
 
     //--------- passo 3 ---------
@@ -304,16 +306,52 @@ void memorizza_tracce(DFN& disc_frac_net,double tol)
             std::cout << "la traccia e' stata generata dalle fratture "<<coppia2[0]<<" e "<<coppia2[1]<<std::endl;
             disc_frac_net.estremiTracce.push_back(est_tra);
             std::cout << "gli estremi della traccia sono "<<std::endl<<est_tra[0] <<std::endl<<"e"<<std::endl<<est_tra[1]<<std::endl;
-            std::array<bool,2> tip2={(tip[0]==2),(tip[1]==2)};
+            std::array<bool,2> tip2={(tip[0]!=2),(tip[1]!=2)};
             disc_frac_net.tips.push_back(tip2);
-            std::cout << "la traccia e' passante per la frattura "<<coppia[0]<<"? "<<tip2[0]<<" (0=falso, 1=vero)"<<std::endl;
-            std::cout << "la traccia e' passante per la frattura "<<coppia[1]<<"? "<<tip2[1]<<" (0=falso, 1=vero)"<<std::endl;
-            disc_frac_net.lunghezze.push_back((est_tra[0]-est_tra[1]).norm());
-            std::cout << "la lunghezza della traccia e' "<<(est_tra[0]-est_tra[1]).norm()<<std::endl;
+            if(tip2[0]) //se la traccia è non passante per la prima frattura della coppia
+            {
+                //qui devo riservare memoria
+                if(tracce_non_passanti[coppia[0]].size()==0 || tracce_non_passanti[coppia[0]].size()==disc_frac_net.numFratture/2)
+                {
+                    tracce_non_passanti[coppia[0]].reserve(disc_frac_net.numFratture/2);
+                }
+                tracce_non_passanti[coppia[0]].push_back(idt);
+            }
+            else // la traccia è passante
+            {
+                if(tracce_passanti[coppia[0]].size()==0 || tracce_passanti[coppia[0]].size()==disc_frac_net.numFratture/2)
+                {
+                    tracce_passanti[coppia[0]].reserve(disc_frac_net.numFratture/2);
+                }
+                tracce_passanti[coppia[0]].push_back(idt);
+            }
+            if(tip2[1]) //se la traccia è non passante per la seconda frattura della coppia
+            {
+                if(tracce_non_passanti[coppia[1]].size()==0 || tracce_non_passanti[coppia[1]].size()==disc_frac_net.numFratture/2)
+                {
+                    tracce_non_passanti[coppia[1]].reserve(disc_frac_net.numFratture/2);
+                }
+                tracce_non_passanti[coppia[1]].push_back(idt);
+            }
+            else // la traccia è passante
+            {
+                if(tracce_passanti[coppia[1]].size()==0 || tracce_passanti[coppia[1]].size()==disc_frac_net.numFratture/2)
+                {
+                    tracce_passanti[coppia[1]].reserve(disc_frac_net.numFratture/2);
+                }
+                tracce_passanti[coppia[1]].push_back(idt);
+            }
+            std::cout << "la traccia e' non passante per la frattura "<<coppia[0]<<"? "<<tip2[0]<<" (0=falso, 1=vero)"<<std::endl;
+            std::cout << "la traccia e' non passante per la frattura "<<coppia[1]<<"? "<<tip2[1]<<" (0=falso, 1=vero)"<<std::endl;
+            double lunghezza=(est_tra[0]-est_tra[1]).norm();
+            disc_frac_net.lunghezze.push_back(lunghezza);
+            std::cout << "la lunghezza della traccia e' "<< lunghezza <<std::endl;
             std::cout << "-----------------------------------------------------"<<std::endl;
             idt++;
         }
     }
+    disc_frac_net.traccePassanti=tracce_passanti;
+    disc_frac_net.tracceNonPassanti=tracce_non_passanti;
     disc_frac_net.numTracce=idt;
     std::cout << "Alla fine sono state trovate "<<idt<<" tracce"<<std::endl;
 }
