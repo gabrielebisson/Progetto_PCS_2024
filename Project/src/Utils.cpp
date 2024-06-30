@@ -472,39 +472,63 @@ void aggiorna_mesh(PolygonalMesh& mesh
                 if(std::find(poligoni.begin(),poligoni.end(),cella2D)==poligoni.end() && cella2D<mesh.NumberCell2D-i) //devo controllare sui poligoni che non sono coinvolti nel taglio o che non sono stati generati da esso (i nuovi poligoni generati hanno gli ID più alti)
                 {
                     auto trova_vecchio_lato_coinvolto_0=std::find(mesh.Cell2DEdges[cella2D].begin(),mesh.Cell2DEdges[cella2D].end(),lati_coinvolti[i][0]);
-                    unsigned int posizione_vecchio_lato_coinvolto_0=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_0);
                     if(trova_vecchio_lato_coinvolto_0!=mesh.Cell2DEdges[cella2D].end()) //se trovo il vecchio_lato_coinvolto_0 come lato del poligono
                     {
+                        unsigned int posizione_vecchio_lato_coinvolto_0=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_0);
                         //aggiorno i vertici
-                        unsigned int successivo=(posizione_vecchio_lato_coinvolto_0+1)%(mesh.Cell2DEdges[cella2D].size());
-                        mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+successivo,mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
+                        if(posizione_vecchio_lato_coinvolto_0==mesh.Cell2DEdges[cella2D].size()-1)
+                        {
+                            mesh.Cell2DVertices[cella2D].emplace_back(mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
+                        }
+                        else
+                        {
+                            mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+posizione_vecchio_lato_coinvolto_0+1,mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
+                        }
                         //aggiorno i lati
                         if(mesh.Cell1DVertices[lati_coinvolti[i][0]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_0]) //sta condizione serve per capire quale nuovo lato inserire dei 2 e dove
                         {
-                            mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+successivo,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            if(posizione_vecchio_lato_coinvolto_0==mesh.Cell2DEdges[cella2D].size()-1)
+                            {
+                                mesh.Cell2DEdges[cella2D].emplace_back(mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            }
+                            else
+                            {
+                                mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+posizione_vecchio_lato_coinvolto_0+1,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            }
                         }
                         else
                         {
-                            auto& precedente=trova_vecchio_lato_coinvolto_0;
-                            mesh.Cell2DEdges[cella2D].insert(precedente,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+posizione_vecchio_lato_coinvolto_0,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
                         }
                     }
                     auto trova_vecchio_lato_coinvolto_1=std::find(mesh.Cell2DEdges[cella2D].begin(),mesh.Cell2DEdges[cella2D].end(),lati_coinvolti[i][1]);
-                    unsigned int posizione_vecchio_lato_coinvolto_1=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_1);
                     if(trova_vecchio_lato_coinvolto_1!=mesh.Cell2DEdges[cella2D].end())
                     {
+                        unsigned int posizione_vecchio_lato_coinvolto_1=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_1);
                         //aggiorno i vertici
-                        unsigned int successivo=(posizione_vecchio_lato_coinvolto_1+1)%(mesh.Cell2DEdges[cella2D].size());
-                        mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+successivo,mesh.Cell1DVertices[lati_coinvolti[i][1]][0]);
-                        //aggiorno i lati
-                        if(mesh.Cell1DVertices[lati_coinvolti[i][1]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_1])
+                        if(posizione_vecchio_lato_coinvolto_1==mesh.Cell2DEdges[cella2D].size()-1)
                         {
-                            mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+successivo,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            mesh.Cell2DVertices[cella2D].emplace_back(mesh.Cell1DVertices[lati_coinvolti[i][1]][0]);
                         }
                         else
                         {
-                            auto& precedente=trova_vecchio_lato_coinvolto_1;
-                            mesh.Cell2DEdges[cella2D].insert(precedente,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+posizione_vecchio_lato_coinvolto_1+1,mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
+                        }
+                        //aggiorno i lati
+                        if(mesh.Cell1DVertices[lati_coinvolti[i][1]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_1])
+                        {
+                            if(posizione_vecchio_lato_coinvolto_1==mesh.Cell2DEdges[cella2D].size()-1)
+                            {
+                                mesh.Cell2DEdges[cella2D].emplace_back(mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            }
+                            else
+                            {
+                                mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+posizione_vecchio_lato_coinvolto_1+1,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            }
+                        }
+                        else
+                        {
+                            mesh.Cell2DEdges[cella2D].insert(trova_vecchio_lato_coinvolto_1,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
                         }
                     }
                 }
@@ -517,21 +541,33 @@ void aggiorna_mesh(PolygonalMesh& mesh
                 if(std::find(poligoni.begin(),poligoni.end(),cella2D)==poligoni.end() && cella2D<mesh.NumberCell2D-i)
                 {
                     auto trova_vecchio_lato_coinvolto_0=std::find(mesh.Cell2DEdges[cella2D].begin(),mesh.Cell2DEdges[cella2D].end(),lati_coinvolti[i][0]);
-                    unsigned int posizione_vecchio_lato_coinvolto_0=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_0);
-                    if(trova_vecchio_lato_coinvolto_0!=mesh.Cell2DEdges[cella2D].end())
+                    if(trova_vecchio_lato_coinvolto_0!=mesh.Cell2DEdges[cella2D].end()) //se trovo il vecchio_lato_coinvolto_0 come lato del poligono
                     {
+                        unsigned int posizione_vecchio_lato_coinvolto_0=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_0);
                         //aggiorno i vertici
-                        unsigned int successivo=(posizione_vecchio_lato_coinvolto_0+1)%(mesh.Cell2DEdges[cella2D].size());
-                        mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+successivo,mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
-                        //aggiorno i lati
-                        if(mesh.Cell1DVertices[lati_coinvolti[i][0]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_0])
+                        if(posizione_vecchio_lato_coinvolto_0==mesh.Cell2DEdges[cella2D].size()-1)
                         {
-                            mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+successivo,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            mesh.Cell2DVertices[cella2D].emplace_back(mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
                         }
                         else
                         {
-                            auto& precedente=trova_vecchio_lato_coinvolto_0;
-                            mesh.Cell2DEdges[cella2D].insert(precedente,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+posizione_vecchio_lato_coinvolto_0+1,mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
+                        }
+                        //aggiorno i lati
+                        if(mesh.Cell1DVertices[lati_coinvolti[i][0]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_0]) //sta condizione serve per capire quale nuovo lato inserire dei 2 e dove
+                        {
+                            if(posizione_vecchio_lato_coinvolto_0==mesh.Cell2DEdges[cella2D].size()-1)
+                            {
+                                mesh.Cell2DEdges[cella2D].emplace_back(mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            }
+                            else
+                            {
+                                mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+posizione_vecchio_lato_coinvolto_0+1,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
+                            }
+                        }
+                        else
+                        {
+                            mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+posizione_vecchio_lato_coinvolto_0,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][0]][1]);
                         }
                     }
                 }
@@ -544,21 +580,33 @@ void aggiorna_mesh(PolygonalMesh& mesh
                 if(std::find(poligoni.begin(),poligoni.end(),cella2D)==poligoni.end() && cella2D<mesh.NumberCell2D-i)
                 {
                     auto trova_vecchio_lato_coinvolto_1=std::find(mesh.Cell2DEdges[cella2D].begin(),mesh.Cell2DEdges[cella2D].end(),lati_coinvolti[i][1]);
-                    unsigned int posizione_vecchio_lato_coinvolto_1=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_1);
                     if(trova_vecchio_lato_coinvolto_1!=mesh.Cell2DEdges[cella2D].end())
                     {
+                        unsigned int posizione_vecchio_lato_coinvolto_1=std::distance(mesh.Cell2DEdges[cella2D].begin(),trova_vecchio_lato_coinvolto_1);
                         //aggiorno i vertici
-                        unsigned int successivo=(posizione_vecchio_lato_coinvolto_1+1)%(mesh.Cell2DEdges[cella2D].size());
-                        mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+successivo,mesh.Cell1DVertices[lati_coinvolti[i][1]][0]);
-                        //aggiorno i lati
-                        if(mesh.Cell1DVertices[lati_coinvolti[i][1]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_1])
+                        if(posizione_vecchio_lato_coinvolto_1==mesh.Cell2DEdges[cella2D].size()-1)
                         {
-                            mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+successivo,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            mesh.Cell2DVertices[cella2D].emplace_back(mesh.Cell1DVertices[lati_coinvolti[i][1]][0]);
                         }
                         else
                         {
-                            auto& precedente=trova_vecchio_lato_coinvolto_1;
-                            mesh.Cell2DEdges[cella2D].insert(precedente,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            mesh.Cell2DVertices[cella2D].insert(mesh.Cell2DVertices[cella2D].begin()+posizione_vecchio_lato_coinvolto_1+1,mesh.Cell1DVertices[lati_coinvolti[i][0]][0]);
+                        }
+                        //aggiorno i lati
+                        if(mesh.Cell1DVertices[lati_coinvolti[i][1]][1]==mesh.Cell2DVertices[cella2D][posizione_vecchio_lato_coinvolto_1])
+                        {
+                            if(posizione_vecchio_lato_coinvolto_1==mesh.Cell2DEdges[cella2D].size()-1)
+                            {
+                                mesh.Cell2DEdges[cella2D].emplace_back(mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            }
+                            else
+                            {
+                                mesh.Cell2DEdges[cella2D].insert(mesh.Cell2DEdges[cella2D].begin()+posizione_vecchio_lato_coinvolto_1+1,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
+                            }
+                        }
+                        else
+                        {
+                            mesh.Cell2DEdges[cella2D].insert(trova_vecchio_lato_coinvolto_1,mappa_vecchi_lati_nuovi_lati[lati_coinvolti[i][1]][1]);
                         }
                     }
                 }
@@ -628,6 +676,7 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
     //riservo memoria
     vertici_nuovo_poligono.reserve(larghezza);
     lati_nuovo_poligono.reserve(larghezza);
+
     //MODUS OPERANDI: andando in senso antiorario aggiungo il segmento del taglio, poi il segmento che connette il taglio al resto del poligono (parte del vecchio lato coinvolto dal taglio), poi tutti i vecchi lati del vecchio poligono non coinvolti dal taglio fino all'altro lato che connette i vecchi lati al taglio
     //vado dal primo lato coinvolto al secondo lato coinvolto, ossia scelgo uno dei 2 poligoni che si vengono a generare dal taglio
     vertici_nuovo_poligono.push_back(est_taglio_arrivo);
@@ -637,7 +686,6 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
     auto trova_lato_vecchio_1=std::find(mesh.Cell2DEdges[poligoni[i]].begin(),mesh.Cell2DEdges[poligoni[i]].end(),vecchio_lato_partenza);
     unsigned int posto=(std::distance(mesh.Cell2DEdges[poligoni[i]].begin(),trova_lato_vecchio_1)+1)%larghezza;
     //info che servono dopo
-    bool finito=false;
     bool mancano_info=false;
     //Vanno considerati vari casi
     if(mesh.Cell2DEdges[poligoni[i]][posto]!=vecchio_lato_arrivo) //caso normale: il lato dopo quello coinvolto dal taglio non è un lato anche lui coinvolto dal taglio
@@ -645,7 +693,7 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
         if(mesh.Cell2DVertices[poligoni[i]][posto]!=est_taglio_partenza) //biosogna discriminare il caso in cui il lato coinvolto dal taglio viene diviso in 2 lati da quello in cui ciò non succede (il taglio passa da un vertice del poligono)
         {
             vertici_nuovo_poligono.push_back(mesh.Cell2DVertices[poligoni[i]][posto]);
-            lati_nuovo_poligono.push_back(0);
+            lati_nuovo_poligono.push_back(std::numeric_limits<unsigned int>::max());
             mancano_info=true;
         }
         else
@@ -658,27 +706,29 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
     else //caso degenere: ho un triangolo, che va gestito in una maniera diversa
     {
         //Siano A,B i nuovi lati derivati da vecchio_lato_partenza e C,D i nuovi lati derivati da vecchio_lato_arrivo se esistono tutti quanti
-        bool AcongC=(std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][0])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end())
-                 || (std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][1])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end());
+        bool AcongC=std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][1])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end()
+                 || std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][0])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]].end();
         if(AcongC) // A congiunge C?
         {
             vertici_nuovo_poligono.push_back(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][1]);
             lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]);
             lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]);
+            return {vertici_nuovo_poligono,lati_nuovo_poligono};
         }
         else
         {
             if(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo].size()==2) //ho C e D?
             {
-                bool AcongD=(std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][0])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end())
-                         || (std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][1])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end());
+                bool AcongD=std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][1])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end()
+                         || std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][0])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end();
                 if(AcongD)
                 {
                     vertici_nuovo_poligono.push_back(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]][1]);
                     lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][0]);
                     lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]);
+                    return {vertici_nuovo_poligono,lati_nuovo_poligono};
                 }
-                else // B congiunge D
+                else //B congiunge o C o D
                 {
                     if(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza].size()==1)
                     {
@@ -687,9 +737,22 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
                         lati_nuovo_poligono={std::numeric_limits<unsigned int>::max()};
                         return {vertici_nuovo_poligono,lati_nuovo_poligono};
                     }
-                    vertici_nuovo_poligono.push_back(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]][1]);
-                    lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]);
-                    lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]);
+                    bool BcongD=std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]][1])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end()
+                             || std::find(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].begin(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end(),mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]][0])!=mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]].end();
+                    if(BcongD)
+                    {
+                        vertici_nuovo_poligono.push_back(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]][1]);
+                        lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]);
+                        lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][1]);
+                        return {vertici_nuovo_poligono,lati_nuovo_poligono};
+                    }
+                    else //B congiunge C
+                    {
+                        vertici_nuovo_poligono.push_back(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]][1]);
+                        lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]);
+                        lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]);
+                        return {vertici_nuovo_poligono,lati_nuovo_poligono};
+                    }
                 }
             }
             else // B congiunge C
@@ -704,50 +767,47 @@ std::array<std::vector<unsigned int>,2> nuovo_poligono(PolygonalMesh& mesh,
                 vertici_nuovo_poligono.push_back(mesh.Cell1DVertices[mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]][1]);
                 lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_partenza][1]);
                 lati_nuovo_poligono.push_back(mappa_vecchi_lati_nuovi_lati[vecchio_lato_arrivo][0]);
+                return {vertici_nuovo_poligono,lati_nuovo_poligono};
             }
         }
-        finito=true;
     }
-    if(!finito) //nel caso normale (il nuovo poligono non è un triangolo) devo ancora finire
+    //mancano_info significherebbe che bisogna capire quale dei 2 segmenti possibili che connettono il taglio ai vecchi lati del poligono devo scegliere, bisogna poi inserire il vecchio lato del vecchio poligono a cui questo lato si connette
+    if(mancano_info)
     {
-        //mancano_info significherebbe che bisogna capire quale dei 2 segmenti possibili che connettono il taglio ai vecchi lati del poligono devo scegliere, bisogna poi inserire il vecchio lato del vecchio poligono a cui questo lato si connette
-        if(mancano_info)
+        std::array<unsigned int,2> lato_1={est_taglio_partenza,vertici_nuovo_poligono.back()}; //gli estremi del lato in questione sono questi o la sua altra permutazione
+        auto trova_lato_1=mappa_estremi_nuovi_lati_nuovi_lati.find(lato_1); //è l'unica cosa a cui serve sta mappa: velocizzare la ricerca
+        if(trova_lato_1==mappa_estremi_nuovi_lati_nuovi_lati.end())
         {
-            std::array<unsigned int,2> lato_1={est_taglio_partenza,vertici_nuovo_poligono.back()}; //gli estremi del lato in questione sono questi o la sua altra permutazione
-            auto trova_lato_1=mappa_estremi_nuovi_lati_nuovi_lati.find(lato_1); //è l'unica cosa a cui serve sta mappa: velocizzare la ricerca
-            if(trova_lato_1==mappa_estremi_nuovi_lati_nuovi_lati.end())
-            {
-                lato_1={vertici_nuovo_poligono.back(),est_taglio_partenza};
-            }
-            lati_nuovo_poligono[1]=mappa_estremi_nuovi_lati_nuovi_lati[lato_1];
-            lati_nuovo_poligono.push_back(mesh.Cell2DEdges[poligoni[i]][posto]);
-            posto++;
-            posto=posto%larghezza;
-            mancano_info=false;
+            lato_1={vertici_nuovo_poligono.back(),est_taglio_partenza};
         }
-        while(mesh.Cell2DEdges[poligoni[i]][posto]!=vecchio_lato_arrivo) //qua inserisco tutti i vecchi lati del vecchio poligono
+        lati_nuovo_poligono[1]=mappa_estremi_nuovi_lati_nuovi_lati[lato_1];
+        lati_nuovo_poligono.push_back(mesh.Cell2DEdges[poligoni[i]][posto]);
+        posto++;
+        posto=posto%larghezza;
+        mancano_info=false;
+    }
+    while(mesh.Cell2DEdges[poligoni[i]][posto]!=vecchio_lato_arrivo) //qua inserisco tutti i vecchi lati del vecchio poligono
+    {
+        vertici_nuovo_poligono.push_back(mesh.Cell2DVertices[poligoni[i]][posto]);
+        lati_nuovo_poligono.push_back(mesh.Cell2DEdges[poligoni[i]][posto]);
+        posto++;
+        posto=posto%larghezza;
+    }
+    if(mesh.Cell2DVertices[poligoni[i]][posto]!=est_taglio_arrivo) //biosogna discriminare il caso in cui il lato coinvolto dal taglio viene diviso in 2 lati da quello in cui ciò non succede (il taglio passa da un vertice del poligono)
+    {
+        vertici_nuovo_poligono.push_back(mesh.Cell2DVertices[poligoni[i]][posto]);
+        lati_nuovo_poligono.push_back(std::numeric_limits<unsigned int>::max());
+        mancano_info=true;
+    }
+    if(mancano_info)
+    {
+        std::array<unsigned int,2> lato_1={est_taglio_arrivo,vertici_nuovo_poligono.back()};
+        auto trova_lato_1=mappa_estremi_nuovi_lati_nuovi_lati.find(lato_1);
+        if(trova_lato_1==mappa_estremi_nuovi_lati_nuovi_lati.end())
         {
-            vertici_nuovo_poligono.push_back(mesh.Cell2DVertices[poligoni[i]][posto]);
-            lati_nuovo_poligono.push_back(mesh.Cell2DEdges[poligoni[i]][posto]);
-            posto++;
-            posto=posto%larghezza;
+            lato_1={vertici_nuovo_poligono.back(),est_taglio_arrivo};
         }
-        if(mesh.Cell2DVertices[poligoni[i]][posto]!=est_taglio_arrivo) //biosogna discriminare il caso in cui il lato coinvolto dal taglio viene diviso in 2 lati da quello in cui ciò non succede (il taglio passa da un vertice del poligono)
-        {
-            vertici_nuovo_poligono.push_back(mesh.Cell2DVertices[poligoni[i]][posto]);
-            lati_nuovo_poligono.push_back(0);
-            mancano_info=true;
-        }
-        if(mancano_info)
-        {
-            std::array<unsigned int,2> lato_1={est_taglio_arrivo,vertici_nuovo_poligono.back()};
-            auto trova_lato_1=mappa_estremi_nuovi_lati_nuovi_lati.find(lato_1);
-            if(trova_lato_1==mappa_estremi_nuovi_lati_nuovi_lati.end())
-            {
-                lato_1={vertici_nuovo_poligono.back(),est_taglio_arrivo};
-            }
-            lati_nuovo_poligono.back()=mappa_estremi_nuovi_lati_nuovi_lati[lato_1];
-        }
+        lati_nuovo_poligono.back()=mappa_estremi_nuovi_lati_nuovi_lati[lato_1];
     }
     return {vertici_nuovo_poligono,lati_nuovo_poligono};
 }
@@ -767,7 +827,7 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
 
     std::vector<unsigned int> temp_pol; //output 1
     std::vector<std::array<unsigned int,2>> temp_lat; //output 2
-    temp_pol.reserve(mesh.NumberCell2D);
+    temp_pol.reserve(mesh.NumberCell2D); //potenzialmente coinvolge tutte le celle 2D
     temp_lat.reserve(mesh.NumberCell2D);
 
     //funzione lambda che calcola l'intersezione tra il lato e l'asse che contiene la traccia
@@ -833,10 +893,13 @@ std::tuple<std::vector<unsigned int>,std::vector<std::array<unsigned int,2>>> co
                 }
                 else //se invece il lato prima non s'intersecava, non serve fare il controllo
                 {
-                    lati_coinvolti[pos]=lato;
-                    pos++;
-                    min_sez=std::min(std::max(std::min(min_sez,intersezione),0.),norma);
-                    max_sez=std::min(std::max(std::max(max_sez,intersezione),0.),norma);
+                    if(pos!=2) //devo guardare che lati_coinvolti non sia già pieno che in casi molto sfortunati può accadere
+                    {
+                        lati_coinvolti[pos]=lato;
+                        pos++;
+                        min_sez=std::min(std::max(std::min(min_sez,intersezione),0.),norma);
+                        max_sez=std::min(std::max(std::max(max_sez,intersezione),0.),norma);
+                    }
                 }
             }
             //aggiorno
