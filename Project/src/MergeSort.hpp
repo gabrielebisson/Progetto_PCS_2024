@@ -1,12 +1,14 @@
-//--------------- MERGE SORT DECRESCENTE--------------------
+//MergeSort decrescente leggermente modificato per le esigenze del progetto
+
 #pragma once
 #include <vector>
 #include <algorithm> // per std::copy
 
 namespace SortLibrary {
 
-template<typename T>
-void Merge(std::vector<T>& v,
+template<typename T1, typename T2>
+void Merge(std::vector<T1>& v,
+           const std::vector<T2>& rif,
            const unsigned int& sx,
            const unsigned int& cx,
            const unsigned int& dx){
@@ -14,11 +16,11 @@ void Merge(std::vector<T>& v,
     unsigned int i = sx;
     unsigned int j = cx + 1;
 
-    std::vector<T> b;
+    std::vector<T1> b;
     b.reserve(dx - sx + 1);
 
     while (i <= cx && j <= dx) {
-        if (std::get<2>(v[i]) >= std::get<2>(v[j])) // Ordinamento decrescente in base alla lunghezza (terzo elemento della tupla)
+        if (rif[v[i]] >= rif[v[j]]) // Ordinamento decrescente in base alla lunghezza (terzo elemento della tupla)
             b.push_back(v[i++]);
         else
             b.push_back(v[j++]);
@@ -32,23 +34,25 @@ void Merge(std::vector<T>& v,
     std::copy(b.begin(), b.end(), v.begin() + sx); // Copia i valori ordinati nel vettore originale
 }
 
-template<typename T>
-void MergeSort(std::vector<T>& v, const unsigned int& sx, const unsigned int& dx) {
+template<typename T1, typename T2>
+void MergeSort(std::vector<T1>& v,
+               const std::vector<T2>& rif,
+               const unsigned int& sx,
+               const unsigned int& dx) {
     if (sx < dx) {
         unsigned int cx = (sx + dx) / 2;
-        MergeSort(v, sx, cx);
-        MergeSort(v, cx + 1, dx);
-        Merge(v, sx, cx, dx);
+        MergeSort(v,rif, sx, cx);
+        MergeSort(v,rif, cx + 1, dx);
+        Merge(v,rif, sx, cx, dx);
     }
 }
 
-template<typename T>
-void MergeSort(std::vector<T>& v) {
+template<typename T1, typename T2>
+void MergeSort(std::vector<T1>& v,
+               const std::vector<T2>& rif) {
     if (!v.empty()) {
-        MergeSort(v, 0, v.size() - 1);
+        MergeSort(v,rif, 0, v.size() - 1);
     }
 }
 
 }
-
-

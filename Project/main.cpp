@@ -14,11 +14,11 @@ int main()
 {
     double tol=__DBL_EPSILON__;
     DFN prova;
-    std::string nome_file="DFN/FR50_data.txt";
+    std::string nome_file="DFN/FR200_data.txt";
     readDFNFromFile(nome_file,prova);
     memorizza_tracce(prova,tol);
     printTraces(prova,"risultato_tracce.txt");
-    printTracesByFracture(prova,"risultato_tracce_ordinate.txt");
+    sortTracesAndPrintByFracture(prova,"risultato_tracce_ordinate.txt");
     return 0;
 
 }
