@@ -14,6 +14,7 @@ int main()
     double tol=__DBL_EPSILON__;
 
     DFN prova;
+
     std::string nome_file="DFN/FR200_data.txt";
     readDFNFromFile(nome_file,prova);
     memorizza_tracce(prova,tol);
@@ -74,6 +75,7 @@ int main()
     // dfn.traccePassanti={{0,1,2},{7},{}};
     // dfn.tracceNonPassanti={{3,4,5,6,18},{8,9,10,11,12,13},{14,15,16,17}};
     // definisci_mesh(dfn,tol);
+
 
     // PolygonalMesh mesh;
     // mesh.NumberCell2D=5;
