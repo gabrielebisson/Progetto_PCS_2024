@@ -7,6 +7,7 @@
 #include "Eigen/Eigen"
 
 namespace PolygonalLibrary {
+
     struct PolygonalMesh
     {
         //celle0D
@@ -27,4 +28,5 @@ namespace PolygonalLibrary {
         std::vector<std::vector<unsigned int>> Cell2DVertices = {}; //vettore di vettori con gli ID dei vertici dei poligoni (in senso antiorario)
         std::vector<std::vector<unsigned int>> Cell2DEdges = {}; //vettore di vettori con gli ID dei lati dei poligoni (in senso antiorario)
     };
+
 }

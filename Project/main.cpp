@@ -39,11 +39,13 @@ int main()
     dfn.versori={Vector3d(0.,0.,1.),Vector3d(0.,0.,1.)};
 
     DFN prova;
+
     std::string nome_file="DFN/FR3_data.txt";
+
     readDFNFromFile(nome_file,prova);
     memorizza_tracce(prova,tol);
     printTraces(prova,"risultato_tracce.txt");
-    printTracesByFracture(prova,"risultato_tracce_ordinate.txt");
+    sortTracesAndPrintByFracture(prova,"risultato_tracce_ordinate.txt");
     return 0;
 
 

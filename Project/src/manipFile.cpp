@@ -106,52 +106,36 @@ void printTraces(const LibraryDFN::DFN& dfn, const std::string& filename)
 
 //----------------- FUNZIONE STAMPA TRACCE PASSANTI - NON PASSANTI -------------------------
 
-void printTracesByFracture(const LibraryDFN::DFN& dfn, const std::string& filename)
+void sortTracesAndPrintByFracture(LibraryDFN::DFN& dfn, const std::string& filename)
 {
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {
-        std::cerr << "Errore nell'apertura del file di output: " << filename << " ." << std::endl;
+        std::cerr << "Errore nella creazione del file di output: " << filename << std::endl;
         return;
     }
 
     // Per ciascuna frattura
     for (unsigned int i = 0; i < dfn.numFratture; ++i) {
-        unsigned int fratturaId = dfn.idFratture[i];
-
-        // Raccogli le tracce associate a questa frattura
-        std::vector<std::tuple<unsigned int, bool, double>> passanti;
-        std::vector<std::tuple<unsigned int, bool, double>> nonPassanti;
-
-        for (unsigned int j = 0; j < dfn.numTracce; ++j) {
-            if (dfn.tracce[j][0] == fratturaId || dfn.tracce[j][1] == fratturaId) {
-                bool tips = dfn.tips[j][i]; // Leggi lo stato "passante" o "non passante" per la frattura corrente
-                double lunghezza = dfn.lunghezze[j];
-                if (tips) {
-                    nonPassanti.emplace_back(j, tips, lunghezza);
-                } else {
-                    passanti.emplace_back(j, tips, lunghezza);
-                }
-            }
-        }
 
         // Ordina le tracce per lunghezza in ordine decrescente
-        SortLibrary::MergeSort(passanti);
-        SortLibrary::MergeSort(nonPassanti);
+        SortLibrary::MergeSort(dfn.tracceNonPassanti[i],dfn.lunghezze);
+        SortLibrary::MergeSort(dfn.traccePassanti[i],dfn.lunghezze);
 
         // Stampa il numero di tracce della frattura
         outFile << "# FractureId; NumTraces" << std::endl;
-        outFile << fratturaId << "; " << (passanti.size() + nonPassanti.size()) << std::endl;
-
-        // Stampa le tracce non-passanti
+        outFile << dfn.idFratture[i] << "; " << (dfn.traccePassanti[i].size() + dfn.tracceNonPassanti[i].size()) << std::endl;
         outFile << "# TraceId; Tips; Length" << std::endl;
-        for (const auto& trace : nonPassanti) {
-            outFile << std::get<0>(trace) << "; " << std::get<1>(trace) << "; " << std::get<2>(trace) << std::endl;
-        }
 
         // Stampa le tracce passanti
-        for (const auto& trace : passanti) {
-            outFile << std::get<0>(trace) << "; " << std::get<1>(trace) << "; " << std::get<2>(trace) << std::endl;
+        for (const auto& trace : dfn.traccePassanti[i]) {
+            outFile << trace << "; " << 0 << "; " << dfn.lunghezze[trace] << std::endl;
         }
+
+        // Stampa le tracce non-passanti
+        for (const auto& trace : dfn.tracceNonPassanti[i]) {
+            outFile << trace << "; " << 1 << "; " << dfn.lunghezze[trace] << std::endl;
+        }
+
     }
 }
 }
