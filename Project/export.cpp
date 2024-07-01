@@ -1,10 +1,8 @@
 #include "UCDUtilities.hpp"
 #include "Utils.hpp"
-#include "readFileTest.hpp"
 #include <iostream>
 #include <gtest/gtest.h>
 #include <random>
-#include "readFileTest.hpp"
 #include "StructDFN.hpp"
 #include "Eigen/Eigen"
 #include "ExportDFN.cpp"
@@ -17,7 +15,7 @@ int main()
 
     double tol=__DBL_EPSILON__;
     LibraryDFN::DFN dfn;
-    std::string nome_file="DFN/FR200_data.txt";
+    std::string nome_file="DFN/FR10_data.txt";
     readDFNFromFile(nome_file,dfn);
     memorizza_tracce(dfn,tol);
 

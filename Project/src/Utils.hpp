@@ -20,7 +20,7 @@ namespace LibraryDFN
 
     //funzioni relative al calcolo delle tracce
     std::vector<std::array<unsigned int,3>> triangola_frattura(DFN& disc_frac_net,unsigned int idr);
-    // inline Eigen::Matrix<double,3,3> allinea_xy(const std::vector<Eigen::Vector3d>& vertici, Eigen::Vector3d normale);
+    inline Eigen::Matrix<double,3,3> allinea_xy(const std::vector<Eigen::Vector3d>& vertici, Eigen::Vector3d normale);
     inline Eigen::Vector3d versore_normale(const std::vector<Eigen::Vector3d>& poligono);
     std::vector<std::array<unsigned int,2>> scarta_fratture(DFN& disc_frac_net,const double& tol);
     void memorizza_tracce(DFN& disc_frac_net,double tol);

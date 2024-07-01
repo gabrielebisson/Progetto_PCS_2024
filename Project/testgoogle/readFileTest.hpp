@@ -104,9 +104,11 @@ TEST(PrintTracesByFractureTest, Output) {
     dfn.tracce = {{0, 1}, {1, 0}, {0, 1}};
     dfn.tips = {{false, true}, {true, false}, {false, false}};
     dfn.lunghezze = {10.0, 20.0, 15.0};
+    dfn.traccePassanti={{1},{0},{}};
+    dfn.tracceNonPassanti={{2,0},{1,2},{}};
 
     std::string tempFile = "temp_fracture_output.txt";
-    printTracesByFracture(dfn, tempFile);
+    sortTracesAndPrintByFracture(dfn, tempFile);
 
     std::ifstream inFile(tempFile);
     ASSERT_TRUE(inFile.is_open());
@@ -126,17 +128,17 @@ TEST(PrintTracesByFractureTest, Output) {
     EXPECT_EQ(lines[0], "# FractureId; NumTraces");
     EXPECT_EQ(lines[1], "0; 3");
     EXPECT_EQ(lines[2], "# TraceId; Tips; Length");
-    EXPECT_EQ(lines[3], "1; 1; 20");
-    EXPECT_EQ(lines[4], "2; 0; 15");
-    EXPECT_EQ(lines[5], "0; 0; 10");
+    EXPECT_EQ(lines[3], "1; 0; 20");
+    EXPECT_EQ(lines[4], "2; 1; 15");
+    EXPECT_EQ(lines[5], "0; 1; 10");
 
     // seconda frattura
     EXPECT_EQ(lines[6], "# FractureId; NumTraces");
     EXPECT_EQ(lines[7], "1; 3");
     EXPECT_EQ(lines[8], "# TraceId; Tips; Length");
-    EXPECT_EQ(lines[9], "0; 1; 10");
-    EXPECT_EQ(lines[10], "1; 0; 20");
-    EXPECT_EQ(lines[11], "2; 0; 15");
+    EXPECT_EQ(lines[9], "0; 0; 10");
+    EXPECT_EQ(lines[10], "1; 1; 20");
+    EXPECT_EQ(lines[11], "2; 1; 15");
 
     // terza frattura
     EXPECT_EQ(lines[12], "# FractureId; NumTraces");
@@ -319,13 +321,12 @@ TEST(IntersecaSegmentiTest, NoIntersection) {
     Eigen::Vector3d A2(1, 1, 0);
     Eigen::Vector3d B1(2, 2, 0);
     Eigen::Vector3d B2(3, 3, 0);
-    double tol = 1e-6;
 
     // Chiamata della funzione per verificare l'intersezione
     auto [point, beta] = LibraryDFN::interseca_segmenti(A1, A2, B1, B2);
 
     // Verifica che i segmenti non si intersecano
-    EXPECT_TRUE(beta < 0 || beta > 1);
+    EXPECT_TRUE((beta < 0) || (beta > 1));
 }
 
 
