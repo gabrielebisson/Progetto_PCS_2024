@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <gtest/gtest.h>
@@ -529,15 +530,5 @@ TEST(NuovoPoligonoTest, CasoDegenere) {
     EXPECT_EQ(result[0], expected_vertices);
     EXPECT_EQ(result[1], expected_edges);
 }
-
-
-
-
-
-
-
-
-
-
 
 
